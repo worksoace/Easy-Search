@@ -1,0 +1,3009 @@
+/* Easy Search — clean neutral base, blue accent */
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --surface-3: #e8ebf0;
+  --text: #121418;
+  --muted: #596273;
+  --border: #44444428;
+  --accent: #4866b4;
+  --accent-hover: #3a55a0;
+  --accent-glow: rgba(72, 102, 180, 0.18);
+  --highlight: #eceff4;
+  --topbar-bg: #eef0f4;
+  --card-head-bg: #f1f3f6;
+  --shadow: 0 1px 3px rgba(18, 20, 24, 0.08);
+  --shadow-md: 0 4px 16px rgba(18, 20, 24, 0.12);
+  --left-width: 430px;
+  --middle-width: 320px;
+  --reader-font-size: 20px;
+  --reader-line-height: 1.8;
+  --panel-gap: 6px;
+  --panel-pad: 10px;
+  --highlight-yellow: rgba(243, 224, 117, 0.5);
+  --highlight-green: rgba(163, 223, 153, 0.5);
+  --highlight-blue: rgba(141, 199, 255, 0.5);
+  --highlight-pink: rgba(255, 173, 206, 0.5);
+  --highlight-orange: rgba(255, 194, 120, 0.5);
+  --highlight-purple: rgba(199, 177, 255, 0.5);
+}
+
+:root[data-theme="dark"] {
+  --bg: #1e1e1e;
+  --surface: #232323;
+  --surface-2: #262626;
+  --surface-3: #2b2b2b;
+  --text: #e8e8e8;
+  --muted: #b7b7b7;
+  --border: #4f4f4f;
+  --accent: #86a8ff;
+  --accent-hover: #a0bcff;
+  --accent-glow: rgba(134, 168, 255, 0.15);
+  --highlight: #333333;
+  --topbar-bg: #1a1a1a;
+  --card-head-bg: #202020;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: Inter, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: var(--reader-font-size);
+}
+
+body {
+  transition: background-color 220ms ease, color 220ms ease;
+  overflow: hidden;
+  background-image: none;
+}
+
+body.is-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
+body.is-resizing-vertical {
+  cursor: row-resize;
+}
+
+.app-shell {
+  width: 100%;
+  height: 100vh;
+  padding: 3px 5px 4px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 2px;
+  overflow: hidden;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  min-height: 24px;
+  min-width: 0;
+  flex-wrap: nowrap;
+  background-color: var(--topbar-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar-left,
+.topbar-right {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 0;
+  /* background-color: #121418; */
+}
+
+.topbar-center {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.toolbar-group {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.menu-bar,
+.menu-bar-item,
+.theme-toggle,
+.modal-close,
+.menu-item,
+select,
+input[type="range"] {
+  border: 0.4px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 5px;
+}
+
+.menu-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.menu-bar-item,
+.theme-toggle {
+  min-width: 0;
+  padding: 3px 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0px;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.menu-bar-item {
+  border-bottom: 0;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 6px 10px;
+  text-align: center;
+  position: relative;
+}
+
+/* Blue underline indicator on hover */
+.menu-bar-item::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  transform: translateX(-50%);
+  transition: width 180ms ease;
+}
+
+.menu-bar-item:hover::after,
+.menu-bar-item:focus-visible::after {
+  width: calc(100% - 12px);
+}
+
+.menu-view-group {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+.menu-bar-item:hover,
+.menu-bar-item:focus-visible {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* Hide the empty icon placeholder spans in the toolbar */
+.menu-icon {
+  display: none;
+}
+
+.toolbar-icon,
+.theme-icon,
+.section-icon {
+  display: inline-flex;
+  width: 13px;
+  height: 13px;
+  color: var(--muted);
+}
+
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 520px;
+  max-width: 760px;
+  min-width: 180px;
+}
+
+.search-wrap.is-hidden {
+  display: none;
+}
+
+.search-icon {
+  display: inline-flex;
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.search-input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  min-height: 36px;
+  padding: 8px 14px 8px 34px;
+  font-size: 1rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.search-filter-shell {
+  flex: 0 0 180px;
+  min-width: 160px;
+  min-height: 36px;
+  border-radius: 12px;
+}
+
+.search-filter-shell .custom-select {
+  min-height: 36px;
+  font-size: 0.95rem;
+}
+
+.search-filter-shell .select-chevron {
+  right: 12px;
+}
+
+.search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  background:
+    linear-gradient(45deg, transparent 42%, var(--text) 42%, var(--text) 58%, transparent 58%),
+    linear-gradient(-45deg, transparent 42%, var(--text) 42%, var(--text) 58%, transparent 58%);
+  opacity: 0.82;
+}
+
+.search-input::-webkit-search-cancel-button:hover {
+  opacity: 1;
+}
+
+.search-input::-ms-clear,
+.search-input::-ms-reveal {
+  color: var(--text);
+}
+
+.search-input:focus,
+.search-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.content {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, var(--left-width)) 2px minmax(220px, var(--middle-width)) 2px minmax(360px, 1fr);
+  gap: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.content.is-stacked {
+  grid-template-columns: 1fr !important;
+  gap: 8px;
+}
+
+.panel-resizer {
+  position: relative;
+  cursor: col-resize;
+  width: 4px;
+  margin: 0;
+  justify-self: center;
+  z-index: 3;
+  opacity: 0.45;
+}
+
+.panel-resizer-horizontal {
+  cursor: row-resize;
+}
+
+.panel-resizer-horizontal::before {
+  top: 3px;
+  bottom: auto;
+  left: 1px;
+  right: 1px;
+  width: auto;
+  height: 4px;
+}
+
+.panel-resizer-inline {
+  margin: 0;
+}
+
+.panel-resizer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  background: transparent;
+  transition: background-color 160ms ease;
+}
+
+.panel-resizer:hover::before {
+  background: color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+.side-panel {
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: minmax(130px, 1fr) 2px minmax(130px, 1fr);
+  gap: 0;
+  padding-right: 1px;
+}
+
+.side-panel > [data-loading],
+.side-panel > [data-empty],
+.side-panel > [data-summary] {
+  position: absolute;
+  left: 0;
+  right: 4px;
+  z-index: 2;
+  padding: 2px 2px 4px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  pointer-events: none;
+}
+
+.side-panel > [data-loading] {
+  top: 0;
+}
+
+.side-panel > [data-empty] {
+  top: 0;
+}
+
+.side-panel > [data-summary] {
+  top: 0;
+}
+
+.dictionary-card,
+.names-panel,
+.verses-panel,
+.verse-actions-shell,
+.preferences-shell,
+.chapter-shell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+.dictionary-card,
+.names-panel,
+.verses-panel {
+  padding: 4px 5px;
+  min-height: 0;
+}
+
+.dictionary-card,
+.names-panel,
+.main-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.names-panel {
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: minmax(130px, 1fr) 2px minmax(130px, 1fr);
+  margin: 0 1px;
+  gap: 0;
+}
+
+.main-panel {
+  margin-left: 1px;
+  display: grid;
+  grid-template-rows: minmax(160px, 8fr) 2px minmax(90px, 2fr);
+  min-width: 0;
+}
+
+.sub-panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 3px 0 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.sub-panel:last-child {
+  border-bottom: 0;
+}
+
+.names-panel .sub-panel {
+  min-height: 0;
+}
+
+.names-panel > [data-bible-names-card] {
+  grid-row: 1;
+}
+
+.names-panel > [data-resizer="names-panel"] {
+  grid-row: 2;
+  cursor: row-resize;
+  pointer-events: auto;
+}
+
+.names-panel > [data-biodata-card] {
+  grid-row: 3;
+}
+
+.main-panel > .sub-panel:first-child {
+  min-height: 0;
+}
+
+.main-panel > .verse-panel {
+  grid-row: 1;
+}
+
+.main-panel > [data-resizer="commentary-panel"] {
+  grid-row: 2;
+  cursor: row-resize;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.main-panel > .commentary-panel {
+  grid-row: 3;
+}
+
+.commentary-panel {
+  min-height: 0;
+}
+
+.commentary-toolbar {
+  padding: 6px 2px;
+}
+
+.commentary-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 4px 2px 6px;
+}
+
+.commentary-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 8%, transparent), transparent 42%),
+    color-mix(in srgb, var(--surface-2) 88%, transparent);
+  box-shadow: 0 10px 30px color-mix(in srgb, #000 10%, transparent);
+}
+
+.commentary-shell-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.commentary-shell-head-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.commentary-source-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.commentary-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.commentary-reference {
+  margin: 2px 0 0;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: right;
+  flex: 0 0 auto;
+}
+
+.commentary-verse-block {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--surface) 84%, var(--accent) 8%);
+}
+
+.commentary-verse-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.commentary-verse-text {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.65;
+}
+
+.commentary-excerpt {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.commentary-paragraph {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.72;
+}
+
+.commentary-paragraph-muted,
+.commentary-empty-detail {
+  color: var(--muted);
+}
+
+.commentary-empty-state {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 18px 14px;
+  border: 1px dashed color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+}
+
+.commentary-empty-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.commentary-empty-detail {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.commentary-entry {
+  display: none;
+}
+
+.commentary-entry-html {
+  display: none;
+}
+
+.commentary-frame {
+  display: none;
+}
+
+.verse-line,
+.chapter-verse {
+  cursor: pointer;
+}
+
+.verse-line:not(.is-highlighted):hover,
+.chapter-verse:not(.is-highlighted):hover {
+  background: color-mix(in srgb, var(--surface-2) 78%, transparent);
+}
+
+.verse-panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.bible-controls {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: var(--surface);
+  flex: 0 0 auto;
+  padding: 4px 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+
+/* ── Top row: translation tabs + navigator ── */
+.bible-controls-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bible-controls-top-row .bible-translation-selector {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 2px 4px;
+}
+
+/* Label + translation selector grouped */
+.bible-version-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bible-version-field .navigator-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  padding-left: 2px;
+}
+
+.bible-version-field .bible-translation-selector {
+  flex: unset;
+  width: 100%;
+}
+
+/* Prev/next arrow buttons — icon-only, compact */
+.bible-controls-second-row .chapter-nav-btn {
+  border-radius: 0;
+  border: 0;
+  border-right: 1px solid var(--border);
+  padding: 4px 10px;
+  font-size: 1rem;
+  line-height: 1;
+  min-width: 32px;
+  text-align: center;
+}
+
+.bible-controls-second-row .chapter-nav-btn:last-child {
+  border-right: 0;
+}
+.bible-controls-top-row .bible-navigator {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.bible-controls-top-row .navigator-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bible-controls-top-row .navigator-field-book .select-shell {
+  min-width: 110px;
+  max-width: 140px;
+  border-radius: 6px;
+}
+
+.bible-controls-top-row .navigator-field:not(.navigator-field-book) .select-shell {
+  min-width: 50px;
+  max-width: 60px;
+  border-radius: 6px;
+}
+
+.bible-controls-top-row .navigator-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  padding-left: 2px;
+}
+
+.bible-controls-top-row .custom-select {
+  font-size: 0.82rem;
+  padding: 0 18px 0 6px;
+}
+
+.bible-controls-top-row .navigator-submit-icon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  align-self: flex-end;
+  border-radius: 6px;
+}
+
+/* ── Second row: prev/next, compare, books, progress ── */
+.bible-controls-second-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bible-controls-second-row .chapter-nav-arrows {
+  display: flex;
+  gap: 0;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.bible-controls-second-row .chapter-nav-btn {
+  border-radius: 0;
+  border: 0;
+  border-right: 1px solid var(--border);
+  padding: 3px 10px;
+  font-size: 0.78rem;
+}
+
+.bible-controls-second-row .chapter-nav-btn:last-child {
+  border-right: 0;
+}
+
+.bible-controls-second-row .parallel-selector-row {
+  flex: 0 1 160px;
+  min-width: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bible-controls-second-row .parallel-select-shell {
+  border-radius: 6px;
+  min-height: 24px;
+}
+
+.bible-controls-second-row .parallel-select-shell .custom-select {
+  font-size: 0.78rem;
+  padding: 0 18px 0 6px;
+}
+
+.bible-controls-second-row .bible-results-tools {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.bible-controls-second-row .bible-results-tools .menu-popover-item {
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  min-height: 0;
+}
+
+.bible-controls-second-row .reading-progress-bar-wrap {
+  flex: 1 1 auto;
+  min-width: 60px;
+  padding: 0;
+  justify-content: flex-end;
+}
+
+.bible-controls-second-row .reading-progress-label {
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 0 4px 4px;
+  border-bottom: 0;
+  min-width: 0;
+  cursor: context-menu;
+  background: var(--card-head-bg);
+  border-radius: 4px;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-label,
+.status-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.summary-bar {
+  padding: 2px 2px 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.side-panel > [data-dictionary-card] {
+  grid-row: 1;
+}
+
+.side-panel > [data-resizer="side-panel"] {
+  grid-row: 2;
+}
+
+.side-panel > [data-concordance-card] {
+  grid-row: 3;
+}
+
+.stack-list,
+.verse-list,
+.chapter-list {
+  margin-top: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 3px;
+  align-content: start;
+}
+
+.stack-list {
+  display: grid;
+  gap: 0;
+  align-content: start;
+}
+
+.dictionary-list {
+  flex: 1 1 auto;
+}
+
+.concordance-card,
+.concordance-list {
+  min-height: 0;
+}
+
+.verse-list {
+  flex: 1 1 auto;
+  display: grid;
+  gap: 0;
+  align-content: start;
+}
+
+.verse-results-footer {
+  padding: 6px 4px 2px;
+  display: flex;
+  justify-content: center;
+}
+
+.concordance-list {
+  flex: 1 1 auto;
+  max-height: none;
+}
+
+.info-item {
+  padding: 10px 2px 12px;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+.info-title {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.dictionary-entry {
+  padding: 10px 2px 14px;
+  background: transparent;
+}
+
+.bible-name-entry {
+  display: grid;
+  gap: 8px;
+}
+
+.dictionary-entry-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  min-width: 0;
+}
+
+.dictionary-badge {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dictionary-body {
+  display: grid;
+  gap: 6px;
+}
+
+.dictionary-paragraph {
+  margin: 0;
+  padding: 4px 0 4px 10px;
+  border-left: 2px solid var(--border);
+  background: transparent;
+  line-height: var(--reader-line-height);
+  color: var(--text);
+}
+
+.bio-section {
+  display: grid;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.bio-label {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.bio-card {
+  display: grid;
+  gap: 4px;
+  padding: 8px 0 10px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+
+.bio-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.bio-summary,
+.bio-line {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.concordance-entry {
+  display: grid;
+  gap: 6px;
+}
+
+.concordance-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.concordance-code {
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.concordance-code[data-source="bsb"] {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.concordance-meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.info-body,
+.verse-text,
+.chapter-verse-text {
+  margin: 0;
+  line-height: var(--reader-line-height);
+}
+
+.info-body,
+.dictionary-body,
+.concordance-meta,
+.bio-section,
+.verse-text,
+.chapter-verse-text {
+  user-select: text;
+}
+
+/* Default bible-navigator (overridden when inside top-row) */
+.bible-navigator {
+  display: grid;
+  grid-template-columns: minmax(140px, 1.4fr) 84px 84px 66px;
+  gap: 4px;
+  align-items: end;
+  padding: 3px 2px 3px;
+  border-bottom: 0;
+  min-width: 0;
+}
+
+/* When inside the top row, switch to flex */
+.bible-controls-top-row .bible-navigator {
+  display: flex;
+  grid-template-columns: unset;
+  padding: 0;
+}
+
+.navigator-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.navigator-field-book {
+  min-width: 0;
+}
+
+.navigator-label,
+.navigator-status {
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.bible-results-tools {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  margin: 2px 0;
+}
+
+.book-occurrences-popover {
+  right: 0;
+  left: auto;
+  top: calc(100% + 4px);
+  width: min(220px, calc(100vw - 24px));
+}
+
+.book-occurrences-list {
+  display: grid;
+  gap: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.navigator-status {
+  margin: 0;
+  padding: 3px 6px;
+  min-height: 1.2em;
+  overflow-wrap: anywhere;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.select-shell,
+.number-shell {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 20px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+/* focus states handled by accent section at end of file */
+
+.custom-select,
+.custom-number-input,
+.navigator-submit {
+  width: 100%;
+  min-height: 20px;
+  font-size: 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  border-radius: 0;
+  font: inherit;
+}
+
+.custom-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0 22px 0 8px;
+  cursor: pointer;
+  color-scheme: light;
+}
+
+.custom-select::-ms-expand {
+  display: none;
+}
+
+:root[data-theme="dark"] .custom-select {
+  color-scheme: dark;
+}
+
+.custom-select option,
+.custom-select optgroup,
+select option,
+select optgroup {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.select-chevron {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  transform: translateY(-55%) rotate(45deg);
+  border-right: 2px solid color-mix(in srgb, var(--text) 72%, transparent);
+  border-bottom: 2px solid color-mix(in srgb, var(--text) 72%, transparent);
+  pointer-events: none;
+}
+
+.custom-number-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+  padding: 0 40px 0 12px;
+}
+
+.custom-number-input::-webkit-outer-spin-button,
+.custom-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.number-controls {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  bottom: 4px;
+  display: grid;
+  gap: 3px;
+  grid-template-rows: 1fr 1fr;
+  width: 28px;
+}
+
+.number-button {
+  border: 0;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--surface-3) 90%, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.number-button:focus-visible,
+.verse-action-button:focus-visible,
+.notes-textarea:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--text);
+}
+
+.number-button:hover,
+.navigator-submit:hover,
+.menu-bar-item:hover,
+.theme-toggle:hover,
+.menu-item:hover,
+.modal-close:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-3));
+  color: var(--accent);
+}
+
+.number-button:active,
+.navigator-submit:active {
+  transform: translateY(1px);
+}
+
+.navigator-submit {
+  cursor: pointer;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+
+.navigator-submit-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.navigator-submit-icon .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.bible-translation-selector {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0 0 2px;
+  padding: 3px 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+  width: 100%;
+  min-width: 0;
+  scrollbar-width: thin;
+}
+
+.translation-btn {
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  min-height: 0;
+  padding: 3px 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.bible-translation-selector::-webkit-scrollbar {
+  height: 6px;
+}
+
+.bible-translation-selector::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text) 28%, transparent);
+  border-radius: 99px;
+}
+
+.translation-btn:last-child {
+  border-right: 0;
+}
+
+.translation-btn.active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  font-weight: 700;
+}
+
+.translation-btn:hover {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-3));
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.bible-translation-selector {
+  scrollbar-gutter: stable;
+}
+
+.verse-group {
+  display: grid;
+  gap: 6px;
+  padding: 4px 2px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.verse-group:last-child {
+  border-bottom: 0;
+}
+
+.verse-group-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.verse-group-list {
+  display: grid;
+  gap: 2px;
+}
+
+.verse-line {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 4px;
+  align-items: start;
+  padding: 2px 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+}
+
+.verse-line.is-highlighted,
+.chapter-verse.is-highlighted {
+  background: transparent;
+  box-shadow: none;
+}
+
+.verse-line.is-highlighted .verse-text,
+.chapter-verse.is-highlighted .chapter-verse-text {
+  display: inline;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 0.2em;
+  border-radius: 0.35em 0.65em 0.4em 0.55em;
+  background:
+    linear-gradient(
+      -2deg,
+      transparent 0 16%,
+      var(--verse-highlight-color, var(--highlight-yellow)) 16% 87%,
+      transparent 87% 100%
+    );
+  filter: saturate(0.95);
+}
+
+.verse-line.has-note,
+.chapter-verse.has-note {
+  border-left: 3px solid color-mix(in srgb, #79b8ff 72%, transparent);
+  padding-left: 10px;
+}
+
+:root[data-theme="dark"] .verse-line:not(.is-highlighted),
+:root[data-theme="dark"] .chapter-verse:not(.is-highlighted) {
+  background: transparent;
+}
+
+.verse-line-number {
+  color: var(--muted);
+  font-weight: 400;
+  line-height: var(--reader-line-height);
+}
+
+.verse-line-content {
+  min-width: 0;
+}
+
+.highlight {
+  background: var(--highlight);
+  color: inherit;
+  border-radius: 4px;
+  padding: 0 2px;
+}
+
+.word-chip {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+
+.word-chip:hover,
+.word-chip-highlight {
+  background: var(--highlight);
+}
+
+.word-chip-italic {
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.chapter-modal,
+.notes-modal {
+  width: min(860px, calc(100vw - 28px));
+  max-height: min(90vh, 900px);
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.chapter-modal::backdrop,
+.notes-modal::backdrop {
+  background: rgba(0, 0, 0, 0.46);
+  backdrop-filter: blur(5px);
+}
+
+.preferences-modal,
+.about-modal,
+.tutorial-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: auto;
+  margin: 0;
+  width: min(360px, calc(100vw - 16px));
+  max-height: min(78vh, 680px);
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.preferences-modal::backdrop,
+.about-modal::backdrop,
+.tutorial-modal::backdrop {
+  background: transparent;
+}
+
+.chapter-shell,
+.preferences-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  max-height: min(90vh, 900px);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  box-shadow: var(--shadow);
+}
+
+.verse-actions-popover {
+  position: fixed;
+  z-index: 50;
+  width: min(320px, calc(100vw - 20px));
+}
+
+.app-context-menu {
+  position: fixed;
+  z-index: 60;
+  width: min(210px, calc(100vw - 20px));
+  display: grid;
+  gap: 4px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+}
+
+.menu-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 55;
+  width: min(220px, calc(100vw - 20px));
+  gap: 4px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+}
+
+.menu-popover[hidden],
+.app-context-menu[hidden] {
+  display: none !important;
+}
+
+.context-menu-item {
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.context-menu-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+}
+
+.menu-popover-item {
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-popover-item-subtle {
+  color: var(--muted);
+}
+
+.menu-popover-item:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-3));
+  color: var(--accent);
+}
+
+.menu-popover-item:disabled {
+  cursor: default;
+  opacity: 0.65;
+  background: transparent;
+}
+
+.verse-actions-shell {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.verse-actions-shell::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+.verse-actions-header {
+  padding: 10px 12px 0;
+}
+
+.verse-actions-reference {
+  margin: 4px 0 0;
+  font-size: 0.86rem;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.verse-actions-body {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px 10px;
+}
+
+.verse-action-button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 82%, transparent), color-mix(in srgb, var(--surface-3) 94%, transparent));
+  color: var(--text);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.note-indicator {
+  position: absolute;
+  top: -10px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 120ms ease, transform 120ms ease, background-color 120ms ease;
+}
+
+.verse-line,
+.chapter-verse {
+  position: relative;
+}
+
+.verse-line.has-note:hover .note-indicator,
+.chapter-verse.has-note:hover .note-indicator {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.note-indicator:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.note-indicator .icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.verse-action-button-subtle {
+  color: var(--muted);
+}
+
+.verse-action-button:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-3));
+  color: var(--accent);
+}
+
+.highlight-picker {
+  display: grid;
+  gap: 8px;
+}
+
+.highlight-picker-label {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.highlight-color-list {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.highlight-color-button {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+  border-radius: 999px;
+  cursor: pointer;
+  background: var(--color);
+}
+
+.highlight-color-button.is-active {
+  box-shadow: inset 0 0 0 2px var(--surface), 0 0 0 2px var(--text);
+}
+
+.notes-textarea {
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.6;
+}
+
+.notes-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.notes-actions .navigator-submit,
+.notes-actions .verse-action-button {
+  flex: 1 1 0;
+}
+
+.chapter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.chapter-title {
+  margin: 4px 0 0;
+  font-size: 1.2rem;
+  color: var(--text);
+}
+
+.modal-close {
+  width: 38px;
+  height: 38px;
+  font: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.chapter-list {
+  padding: 8px 10px 10px;
+  display: grid;
+  gap: 0;
+  align-content: start;
+}
+
+.chapter-verse {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 10px 2px 12px;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  position: relative;
+}
+
+.chapter-verse-active {
+  background: color-mix(in srgb, var(--highlight) 28%, transparent);
+}
+
+.chapter-verse-number {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+:root.hide-verse-numbers .verse-line-number,
+:root.hide-verse-numbers .chapter-verse-number {
+  display: none;
+}
+
+:root.hide-verse-numbers .verse-line {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:root.hide-verse-numbers .chapter-verse {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+:root.compact-verses .verse-group {
+  gap: 3px;
+}
+
+:root.compact-verses .verse-line,
+:root.compact-verses .chapter-verse {
+  padding-top: 4px;
+  padding-bottom: 6px;
+}
+
+.preferences-body {
+  padding: 12px 14px 14px;
+  display: grid;
+  gap: 12px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  max-height: 100%;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text) 34%, transparent) transparent;
+}
+
+.preferences-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.preferences-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.preferences-body::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text) 26%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.preferences-body::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text) 40%, transparent);
+  background-clip: content-box;
+}
+
+.preferences-body .info-body {
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.preferences-body strong {
+  color: var(--text);
+}
+
+.setting-row {
+  display: grid;
+  gap: 10px;
+}
+
+.setting-row span {
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.setting-row-toggle {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+}
+
+.toggle-shell {
+  position: relative;
+  width: 46px;
+  height: 28px;
+  flex: 0 0 auto;
+}
+
+.toggle-shell input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-3);
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.toggle-track::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.toggle-shell input:checked + .toggle-track {
+  background: color-mix(in srgb, var(--accent) 72%, var(--surface-3));
+  border-color: var(--accent);
+}
+
+.toggle-shell input:checked + .toggle-track::before {
+  transform: translateX(18px);
+}
+
+.toggle-shell input:focus-visible + .toggle-track {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--text);
+}
+
+.setting-row output {
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+select,
+input[type="range"] {
+  width: 100%;
+  padding: 8px 10px;
+}
+
+input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  padding: 0;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  background: var(--text);
+  border-radius: 999px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 2px solid var(--text);
+  margin-top: -4px;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: var(--text);
+  border-radius: 999px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 2px solid var(--text);
+}
+
+.stack-list::-webkit-scrollbar,
+.verse-list::-webkit-scrollbar,
+.chapter-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.stack-list::-webkit-scrollbar-track,
+.verse-list::-webkit-scrollbar-track,
+.chapter-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.stack-list::-webkit-scrollbar-thumb,
+.verse-list::-webkit-scrollbar-thumb,
+.chapter-list::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text) 24%, transparent);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+.stack-list::-webkit-scrollbar-thumb:hover,
+.verse-list::-webkit-scrollbar-thumb:hover,
+.chapter-list::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text) 40%, transparent);
+  background-clip: content-box;
+}
+
+@media (max-width: 1240px) {
+  body {
+    overflow-y: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .content {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .panel-resizer {
+    display: none;
+  }
+
+  .names-panel,
+  .main-panel {
+    margin: 0;
+  }
+
+  .main-panel {
+    display: flex;
+  }
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    padding: 8px;
+  }
+
+  .topbar {
+    align-items: stretch;
+  }
+
+  .menu-bar,
+  .theme-toggle {
+    width: 100%;
+  }
+
+  .search-wrap {
+    flex-direction: column;
+    align-items: stretch;
+    flex: 1 1 auto;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .search-icon {
+    top: 18px;
+  }
+
+  .search-filter-shell {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .bible-navigator {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .navigator-submit {
+    grid-column: 1 / -1;
+  }
+
+  .stack-list,
+  .verse-list {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 620px) {
+  .bible-navigator {
+    grid-template-columns: 1fr;
+  }
+
+  .navigator-submit {
+    grid-column: auto;
+  }
+}
+
+/* =========================================================
+   Strong's concordance chip (KJV+ mode)
+   ========================================================= */
+
+.strongs-chip {
+  display: inline;
+  border: 0;
+  padding: 0 3px;
+  margin: 0 1px;
+  font: inherit;
+  font-size: 0.72em;
+  font-weight: 600;
+  line-height: inherit;
+  vertical-align: super;
+  cursor: pointer;
+  border-radius: 4px;
+  color: color-mix(in srgb, var(--text) 50%, transparent);
+  background: transparent;
+  transition: background-color 130ms ease, color 130ms ease;
+  letter-spacing: 0.02em;
+}
+
+.strongs-chip:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent-hover);
+}
+
+:root[data-theme="dark"] .strongs-chip:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent);
+}
+
+.strongs-chip:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+
+/* =========================================================
+   Strong's lexicon modal
+   ========================================================= */
+
+.strongs-modal {
+  width: min(520px, calc(100vw - 28px));
+  max-height: min(80vh, 700px);
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.strongs-modal::backdrop {
+  background: rgba(0, 0, 0, 0.46);
+  backdrop-filter: blur(5px);
+}
+
+.strongs-entry {
+  display: grid;
+  gap: 12px;
+}
+
+.strongs-lemma-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.strongs-lemma {
+  font-size: 1.6rem;
+  font-weight: 600;
+  direction: rtl;
+  unicode-bidi: isolate;
+  line-height: 1.3;
+}
+
+.strongs-transliteration {
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.strongs-pronounce {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.strongs-description {
+  margin: 0;
+  line-height: 1.75;
+  color: var(--text);
+  user-select: text;
+  font-size: 0.95rem;
+  border-left: 3px solid var(--border);
+  padding-left: 12px;
+}
+
+/* =========================================================
+   Accent color — focused select shells
+   ========================================================= */
+
+.select-shell:focus-within,
+.number-shell:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  outline: none;
+}
+
+.navigator-submit:focus-visible,
+.menu-bar-item:focus-visible,
+.theme-toggle:focus-visible,
+.menu-item:focus-visible,
+.modal-close:focus-visible,
+.context-menu-item:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  outline: none;
+}
+
+/* =========================================================
+   Verse hover — subtle accent left-bar slide-in
+   ========================================================= */
+
+.verse-line,
+.chapter-verse {
+  transition: background-color 120ms ease, padding-left 120ms ease;
+}
+
+.verse-line:not(.is-highlighted):hover,
+.chapter-verse:not(.is-highlighted):hover {
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-2));
+  padding-left: 6px;
+}
+
+/* =========================================================
+   Navigator submit — accent fill on hover
+   ========================================================= */
+
+.navigator-submit {
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.navigator-submit:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+  color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* =========================================================
+   Context menu item hover
+   ========================================================= */
+
+.context-menu-item {
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.context-menu-item:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
+  color: var(--accent);
+}
+
+/* =========================================================
+   Theme toggle — accent on hover
+   ========================================================= */
+
+.theme-toggle {
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
+}
+
+/* =========================================================
+   Panel cards — subtle accent border-top on hover
+   ========================================================= */
+
+.dictionary-card,
+.names-panel,
+.verses-panel {
+  transition: box-shadow 200ms ease;
+}
+
+.dictionary-card:hover,
+.names-panel:hover,
+.verses-panel:hover {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* =========================================================
+   Popover / modal — fade + slide-up entrance
+   ========================================================= */
+
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.menu-popover:not([hidden]) {
+  animation: popover-in 160ms ease forwards;
+}
+
+.verse-actions-popover:not([hidden]) {
+  animation: popover-in 160ms ease forwards;
+}
+
+.chapter-shell,
+.preferences-shell {
+  animation: modal-in 200ms ease forwards;
+}
+
+/* =========================================================
+   Verse group title — accent color
+   ========================================================= */
+
+.verse-group-title {
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+/* =========================================================
+   Concordance code chip — accent tint for Strong's
+   ========================================================= */
+
+.concordance-code {
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.concordance-code:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* =========================================================
+   Scrollbar accent thumb on hover
+   ========================================================= */
+
+.stack-list::-webkit-scrollbar-thumb:hover,
+.verse-list::-webkit-scrollbar-thumb:hover,
+.chapter-list::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  background-clip: content-box;
+}
+
+/* =========================================================
+   Section icon — accent tint
+   ========================================================= */
+
+.section-icon {
+  transition: color 150ms ease;
+}
+
+.card-head:hover .section-icon {
+  color: var(--accent);
+}
+
+/* =========================================================
+   Font family preference
+   ========================================================= */
+
+html,
+body {
+  font-family: var(--reader-font-family, Inter, "Segoe UI", sans-serif);
+}
+
+/* =========================================================
+   Nav history buttons (back / forward in topbar)
+   ========================================================= */
+
+.nav-history-btn {
+  font-size: 1.1rem;
+  min-width: 28px;
+  opacity: 0.65;
+  transition: opacity 150ms ease, color 150ms ease;
+}
+
+.nav-history-btn:disabled {
+  opacity: 0.22;
+  cursor: default;
+  color: var(--muted);
+}
+
+.nav-history-btn:not(:disabled):hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* =========================================================
+   Chapter prev/next arrow buttons
+   ========================================================= */
+
+.chapter-nav-arrows {
+  display: flex;
+  gap: 4px;
+  padding: 2px 2px 4px;
+}
+
+.chapter-nav-btn {
+  flex: 1 1 0;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease, transform 120ms ease;
+}
+
+.chapter-nav-btn:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.chapter-nav-btn:active {
+  transform: translateY(1px);
+}
+
+/* =========================================================
+   Verse copy button — appears on hover
+   ========================================================= */
+
+.verse-line-content {
+  position: relative;
+}
+
+.verse-copy-btn {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity 140ms ease, transform 140ms ease, color 140ms ease, background-color 140ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.verse-copy-btn .icon {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.verse-line:hover .verse-copy-btn,
+.chapter-verse:hover .verse-copy-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.verse-copy-btn:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* =========================================================
+   Copy toast notification
+   ========================================================= */
+
+.copy-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--text);
+  color: var(--bg);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease, transform 200ms ease;
+  z-index: 200;
+  white-space: nowrap;
+}
+
+.copy-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* =========================================================
+   Inline Strong's tooltip
+   ========================================================= */
+
+.strongs-tooltip {
+  position: fixed;
+  z-index: 120;
+  width: min(300px, calc(100vw - 20px));
+  padding: 10px 12px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+}
+
+.strongs-tooltip[hidden] {
+  display: none;
+}
+
+.strongs-tooltip-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.strongs-tooltip-number {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.strongs-tooltip-lemma {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.strongs-tooltip-xlit {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.strongs-tooltip-desc {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.strongs-tooltip-more {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 140ms ease;
+}
+
+.strongs-tooltip-more:hover {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface-2));
+}
+
+/* =========================================================
+   Search history popover
+   ========================================================= */
+
+.search-history-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(340px, calc(100vw - 20px));
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 60;
+}
+
+.search-history-label {
+  margin: 0 0 4px;
+  padding: 2px 10px 4px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.search-history-item {
+  font-size: 0.92rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-wrap {
+  position: relative;
+}
+
+/* =========================================================
+   Focus mode — hide everything except verse panel
+   ========================================================= */
+
+:root.focus-mode .side-panel,
+:root.focus-mode .names-panel,
+:root.focus-mode [data-resizer="left"],
+:root.focus-mode [data-resizer="middle"] {
+  display: none !important;
+}
+
+:root.focus-mode .content {
+  grid-template-columns: 1fr !important;
+}
+
+:root.focus-mode .verses-panel {
+  grid-template-rows: 1fr !important;
+}
+
+:root.focus-mode .commentary-panel,
+:root.focus-mode [data-resizer="commentary-panel"] {
+  display: none !important;
+}
+
+/* Focus mode button active state */
+:root.focus-mode [data-focus-mode] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
+}
+
+/* =========================================================
+   Verse group title — match accent
+   ========================================================= */
+
+.verse-group-title {
+  color: var(--accent);
+}
+
+/* =========================================================
+   Chapter verse — copy button positioning
+   ========================================================= */
+
+.chapter-verse {
+  position: relative;
+}
+
+.chapter-verse .verse-copy-btn {
+  top: 10px;
+  right: 4px;
+}
+
+
+/* =========================================================
+   Verse of the Day
+   ========================================================= */
+
+.verse-of-day {
+  margin: 4px 2px 6px;
+  padding: 10px 14px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  display: grid;
+  gap: 4px;
+}
+
+.vod-label {
+  margin: 0;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.vod-ref {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.vod-text {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text);
+  font-style: italic;
+}
+
+.vod-nav-btn {
+  justify-self: start;
+  margin-top: 4px;
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.vod-nav-btn:hover {
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+}
+
+/* =========================================================
+   Reading Progress Bar
+   ========================================================= */
+
+.reading-progress-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 2px 4px;
+}
+
+.reading-progress-bar-track {
+  flex: 1 1 auto;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.reading-progress-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent);
+  transition: width 400ms ease;
+}
+
+.reading-progress-label {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* =========================================================
+   Chapter read button
+   ========================================================= */
+
+.verse-group-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.chapter-read-btn {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.chapter-read-btn:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.chapter-read-btn.is-read {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  font-weight: 600;
+}
+
+/* =========================================================
+   Highlight left-border visibility
+   ========================================================= */
+
+.verse-line[data-highlight-color],
+.chapter-verse[data-highlight-color] {
+  border-left: 3px solid var(--verse-highlight-color, var(--highlight-yellow));
+  padding-left: 8px;
+}
+
+/* =========================================================
+   Parallel translation view
+   ========================================================= */
+
+.parallel-selector-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 2px 2px;
+}
+
+.parallel-selector-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.parallel-select-shell {
+  flex: 1 1 auto;
+  min-height: 26px;
+}
+
+.verse-group-parallel .verse-line {
+  grid-template-columns: 14px 1fr 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+.verse-line-parallel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
+}
+
+.parallel-version-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.verse-text-parallel {
+  color: var(--muted);
+  font-size: 0.92em;
+}
+
+/* =========================================================
+   Cross-references panel
+   ========================================================= */
+
+.cross-refs-panel {
+  margin: 4px 0 0;
+  padding: 8px 6px 6px;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+  border-radius: 0 0 6px 6px;
+}
+
+.cross-refs-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.cross-refs-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.cross-refs-list {
+  display: grid;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.cross-ref-item {
+  display: grid;
+  gap: 3px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.cross-ref-item:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+}
+
+.cross-ref-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cross-ref-link {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  transition: color 140ms ease;
+}
+
+.cross-ref-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.cross-ref-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  background: var(--surface-2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.cross-ref-text {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* =========================================================
+   Red letter mode — words of Jesus
+   ========================================================= */
+
+:root.red-letter-mode .verse-text em,
+:root.red-letter-mode .chapter-verse-text em {
+  color: #c0392b;
+  font-style: normal;
+}
+
+:root[data-theme="dark"].red-letter-mode .verse-text em,
+:root[data-theme="dark"].red-letter-mode .chapter-verse-text em {
+  color: #e57373;
+}
+
+/* =========================================================
+   Verse pulse animation (smooth scroll target)
+   ========================================================= */
+
+@keyframes verse-pulse {
+  0%   { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+  60%  { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  100% { background: transparent; }
+}
+
+.verse-pulse {
+  animation: verse-pulse 1.2s ease forwards;
+}
+
+/* =========================================================
+   Verse range selection
+   ========================================================= */
+
+.verse-range-selected {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2)) !important;
+  border-left: 3px solid var(--accent) !important;
+  padding-left: 8px;
+}
+

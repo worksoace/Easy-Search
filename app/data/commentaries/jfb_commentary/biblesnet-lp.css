@@ -1,0 +1,157 @@
+BODY {
+	background-color : White;
+	color : #000000;
+	font-family : Arial, Tahoma, Helvetica, sans-serif;
+	margin-left : 8%;
+	margin-right : 5%;
+}
+
+
+A:LINK, A:VISITED {
+	color : Blue;
+	text-decoration : underline;
+	background-color : White;
+	font-size : large;
+	text-align : center;
+}
+
+A:HOVER {
+	background-color : #FFFFFF;
+	color : Black;
+	text-decoration : none;
+	background : White;
+	font-size :large;
+	text-align : center;
+}
+
+div{
+color : #990000;
+	text-align : center;
+		background-color : White;
+	font-family : Arial, Helvetica, sans-serif;
+	font-size : 170%;
+}
+
+.myfont135{
+font-size : 135%;	
+}
+li{
+	color : Black;
+	background-color : White;
+	font-family :Arial, Helvetica, sans-serif;
+	font-size : 135%;
+	margin-left : 0%;
+}
+H1 {
+	color : #990000;
+	font-family : Verdana, Tahoma, Arial, Helvetica, sans-serif;
+	font-size : 200%;
+	margin-bottom : auto;
+	text-align : center;
+}
+
+H2 {
+	color : #990000;
+	font-family : Verdana, Tahoma, Arial, Helvetica, sans-serif;
+	font-size : 170%;
+	margin-top : auto;
+	text-align : center;
+}
+
+H3 {
+	color : #990000;
+	font-family : Verdana, Tahoma, Arial, Helvetica, sans-serif;
+	font-size : 150%;
+	margin-top : auto;
+	text-align : center;
+}
+
+H4 {
+	color : #990000;
+	font-family : Verdana, Tahoma, Arial, Helvetica, sans-serif;
+	font-size : 140%;
+	margin-top : auto;
+	text-align : center;
+}
+
+H5 {
+	color : Black;
+	font-family : Arial, Helvetica, sans-serif;
+	font-size : 135%;
+	margin-top : auto;
+	text-align : center;
+}
+
+H6 {
+	color : #990000;
+	font-family : Arial, Helvetica, sans-serif;
+	font-size : 115%;
+	text-align : center;
+}
+
+BLOCKQUOTE {
+	margin-left : 5%;
+	background-color : White;
+	font-family : Arial, Helvetica, sans-serif;
+	font-size : 135%;
+	text-indent : 5%;
+	font-style : italic;
+	margin-right : 5%;
+}
+
+CAPTION {
+	font-family : Verdana, Tahoma, Arial, Helvetica, sans-serif;
+	font-weight : 800;
+	background-color : White;
+}
+
+cite{
+	background-color : White;
+	font-family : Arial, Helvetica, sans-serif;
+	font-size : 125%;
+	font-style : oblique;
+	text-indent : 5%;
+}
+p{
+	background-color : White;
+	font-family : Arial, Helvetica, sans-serif;
+	font-size : 135%;
+	text-indent : 5%;
+}
+
+pre{
+	background-color : White;
+	font-family : Arial, Helvetica, sans-serif;
+	font-size : 135%;
+}
+
+span{
+	text-align : center;
+}
+
+TH {
+	background-color : White;
+	font-family : Arial, Helvetica, sans-serif;
+	font-size : 135%;
+}
+
+TD {
+	background-color : White;
+	font-family : Arial, Helvetica, sans-serif;
+	font-size : 135%;
+}
+
+ol{
+	background-color : White;
+	font-family : Arial, Helvetica, sans-serif;
+
+	margin-left : auto;
+
+}
+
+ul{
+	background-color : White;
+	font-family : Arial, Helvetica, sans-serif;
+
+	margin-left : 0%;
+}

@@ -1,0 +1,29 @@
+{
+  "defaultCommentary": "matthew_henry",
+  "commentaries": [
+    {
+      "code": "matthew_henry",
+      "label": "Matthew Henry",
+      "kind": "html",
+      "folder": "matthew_henry",
+      "filePattern": "MHC{{bookIndex}}{{chapter}}.HTM",
+      "bookIndexPadding": 2,
+      "chapterPadding": 3,
+      "tocFile": "MHC00000.HTM",
+      "publicDomain": true,
+      "notes": "Local HTML commentary pages rendered directly in the app."
+    },
+    {
+      "code": "jfb",
+      "label": "Jamieson-Fausset-Brown",
+      "kind": "html",
+      "folder": "jfb_commentary",
+      "filePattern": "JFB{{bookIndex}}.htm",
+      "bookIndexPadding": 2,
+      "chapterAnchorPattern": "Chapter{{chapter}}",
+      "tocFile": "JFB00.htm",
+      "publicDomain": true,
+      "notes": "Local HTML commentary pages rendered directly in the app."
+    }
+  ]
+}

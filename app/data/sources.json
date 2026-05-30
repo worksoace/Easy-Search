@@ -1,0 +1,98 @@
+{
+  "downloaded_on": "2026-04-05T18:30:00.000Z",
+  "bundled": {
+    "akjv": {
+      "status": "downloaded",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/AKJV.csv",
+      "notes": "Loaded from scrollmapper/bible_databases and converted from CSV to the app JSON format."
+    },
+    "kjv": {
+      "status": "downloaded",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/KJV.csv",
+      "notes": "Loaded from scrollmapper/bible_databases and converted from CSV to the app JSON format."
+    },
+    "asv": {
+      "status": "downloaded",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/ASV.csv",
+      "notes": "Loaded from scrollmapper/bible_databases and converted from CSV to the app JSON format."
+    },
+    "bbe": {
+      "status": "downloaded",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/BBE.csv",
+      "notes": "Loaded from scrollmapper/bible_databases and converted from CSV to the app JSON format."
+    },
+    "drc": {
+      "status": "downloaded",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/DRC.csv",
+      "notes": "Loaded from scrollmapper/bible_databases and converted from CSV to the app JSON format."
+    },
+    "darby": {
+      "status": "downloaded",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/Darby.csv",
+      "notes": "Loaded from scrollmapper/bible_databases and converted from CSV to the app JSON format."
+    },
+    "geneva1599": {
+      "status": "downloaded",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/Geneva1599.csv",
+      "notes": "Loaded from scrollmapper/bible_databases and converted from CSV to the app JSON format."
+    },
+    "webster": {
+      "status": "downloaded",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/Webster.csv",
+      "notes": "Loaded from scrollmapper/bible_databases and converted from CSV to the app JSON format."
+    },
+    "web": {
+      "status": "downloaded",
+      "source": "https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-web",
+      "notes": "Loaded chapter-by-chapter from wldeh/bible-api and converted into the app JSON format for offline use."
+    },
+    "ylt": {
+      "status": "downloaded",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/YLT.csv",
+      "notes": "Loaded from scrollmapper/bible_databases and converted from CSV to the app JSON format."
+    },
+    "bible_versions": {
+      "status": "generated",
+      "source": "local manifest",
+      "notes": "Lists bundled Bible versions for the app's version selector."
+    },
+    "dictionary": {
+      "status": "downloaded",
+      "source": "https://raw.githubusercontent.com/matthewreagan/WebstersEnglishDictionary/master/dictionary.json",
+      "notes": "Webster dictionary JSON downloaded as-is from matthewreagan/WebstersEnglishDictionary."
+    },
+    "bible_names": {
+      "status": "downloaded",
+      "source": "https://www.ccel.org/h/hitchcock/bible_names/bible_names.html",
+      "notes": "Hitchcock's Bible Names Dictionary downloaded from CCEL and converted into a local JSON array of { name, meaning } objects."
+    },
+    "bible_name_biodata": {
+      "status": "downloaded",
+      "source": "https://github.com/robertrouse/KJV-bible-database-with-metadata-MetaV-/tree/master/CSV",
+      "notes": "Built from MetaV People.csv and Places.csv, then matched to the bundled Bible names dataset to create short biodata records."
+    },
+    "concordance": {
+      "status": "downloaded",
+      "source": "https://github.com/mormon-documentation-project/strongs",
+      "notes": "Strong's concordance JSON mirror containing Hebrew and Greek entries. The repository license states the data is public domain."
+    }
+  },
+  "not_bundled": {
+    "nkjv": {
+      "status": "not_downloaded",
+      "reason": "Thomas Nelson says full-text use in its entirety requires a license, and broader digital uses outside the gratis limits require written permission."
+    },
+    "niv": {
+      "status": "not_downloaded",
+      "reason": "NIV is not bundled because app and website uses require explicit permission or license terms rather than unrestricted offline redistribution."
+    },
+    "esv": {
+      "status": "not_downloaded",
+      "reason": "Crossway provides controlled access options, but full-text redistribution is not treated like public-domain Bible text."
+    },
+    "nlt": {
+      "status": "not_downloaded",
+      "reason": "NLT permissions are limited for quotation, and broader or full-text app redistribution requires approval."
+    }
+  }
+}

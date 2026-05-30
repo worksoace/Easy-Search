@@ -1,0 +1,101 @@
+{
+  "defaultVersion": "kjv",
+  "versions": [
+    {
+      "code": "akjv",
+      "label": "American King James Version",
+      "shortLabel": "AKJV",
+      "notes": "Public-domain translation converted from scrollmapper CSV into the app JSON format.",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/AKJV.csv",
+      "publicDomain": true
+    },
+    {
+      "code": "kjv",
+      "label": "King James Version",
+      "shortLabel": "KJV",
+      "notes": "Public-domain translation converted from scrollmapper CSV into the app JSON format.",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/KJV.csv",
+      "publicDomain": true
+    },
+    {
+      "code": "kjv_plus",
+      "label": "King James Version with Strong's Numbers",
+      "shortLabel": "KJV+",
+      "notes": "Public-domain KJV with embedded Strong's numbers (H/G) for concordance lookup. Click any [H###] or [G###] tag to see the lexicon entry.",
+      "source": "temp-kjv (local)",
+      "publicDomain": true
+    },
+    {
+      "code": "niv",
+      "label": "New International Version",
+      "shortLabel": "NIV",
+      "notes": "The New International Version, a widely-used modern English translation.",
+      "source": "Bible-niv-main (local)",
+      "publicDomain": false
+    },
+    {
+      "code": "asv",
+      "label": "American Standard Version",
+      "shortLabel": "ASV",
+      "notes": "Public-domain translation converted from scrollmapper CSV into the app JSON format.",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/ASV.csv",
+      "publicDomain": true
+    },
+    {
+      "code": "bbe",
+      "label": "Bible in Basic English",
+      "shortLabel": "BBE",
+      "notes": "Public-domain translation converted from scrollmapper CSV into the app JSON format.",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/BBE.csv",
+      "publicDomain": true
+    },
+    {
+      "code": "drc",
+      "label": "Douay-Rheims Challoner",
+      "shortLabel": "DRC",
+      "notes": "Public-domain translation converted from scrollmapper CSV into the app JSON format.",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/DRC.csv",
+      "publicDomain": true
+    },
+    {
+      "code": "darby",
+      "label": "Darby Bible Translation",
+      "shortLabel": "DARBY",
+      "notes": "Public-domain translation converted from scrollmapper CSV into the app JSON format.",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/Darby.csv",
+      "publicDomain": true
+    },
+    {
+      "code": "geneva1599",
+      "label": "Geneva Bible 1599",
+      "shortLabel": "GNV",
+      "notes": "Public-domain translation converted from scrollmapper CSV into the app JSON format.",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/Geneva1599.csv",
+      "publicDomain": true
+    },
+    {
+      "code": "webster",
+      "label": "Webster Bible",
+      "shortLabel": "WBT",
+      "notes": "Public-domain translation converted from scrollmapper CSV into the app JSON format.",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/Webster.csv",
+      "publicDomain": true
+    },
+    {
+      "code": "web",
+      "label": "World English Bible",
+      "shortLabel": "WEB",
+      "notes": "Public-domain translation downloaded chapter-by-chapter from wldeh/bible-api and converted into the app JSON format.",
+      "source": "https://cdn.jsdelivr.net/gh/wldeh/bible-api/bibles/en-web",
+      "publicDomain": true
+    },
+    {
+      "code": "ylt",
+      "label": "Young Literal Translation",
+      "shortLabel": "YLT",
+      "notes": "Public-domain translation converted from scrollmapper CSV into the app JSON format.",
+      "source": "https://raw.githubusercontent.com/scrollmapper/bible_databases/master/formats/csv/YLT.csv",
+      "publicDomain": true
+    }
+  ]
+}

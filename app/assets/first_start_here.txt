@@ -1,0 +1,10 @@
+Welcome to Easy Search!
+
+This is a lightweight offline Bible study and search app built with Electron.
+
+Quick Start:
+1. Use the search box to find Bible verses and commentary
+2. Browse different Bible translations in the dropdown
+3. Explore the dictionary and concordance features
+
+For more information, visit the app's home page.

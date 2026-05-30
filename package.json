@@ -1,0 +1,49 @@
+{
+  "name": "easy-search",
+  "version": "1.0.0",
+  "description": "Easy Search: a lightweight offline Bible study and search app built with Electron.",
+  "main": "app/main.js",
+  "scripts": {
+    "start": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$env:ELECTRON_RUN_AS_NODE=$null; electron .\"",
+    "data:bibles": "node scripts/download-public-domain-bibles.js",
+    "build:icon": "node scripts/build-icon.js",
+    "build:installer-assets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer-assets.ps1",
+    "build:portable": "npm run build:installer-assets && electron-builder --win portable",
+    "build": "npm run build:installer-assets && electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "31.0.2",
+    "electron-builder": "^26.8.1",
+    "png-to-ico": "^3.0.1"
+  },
+  "build": {
+    "appId": "com.easysearch.app",
+    "productName": "Easy Search",
+    "npmRebuild": false,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "app/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "icon.ico",
+      "verifyUpdateCodeSignature": false,
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "installer.nsh",
+      "license": "license.txt",
+      "installerHeader": "installerHeader.bmp",
+      "installerSidebar": "installerSidebar.bmp",
+      "uninstallerSidebar": "installerSidebar.bmp",
+      "artifactName": "Easy-Search-Setup-${version}.${ext}"
+    }
+  }
+}

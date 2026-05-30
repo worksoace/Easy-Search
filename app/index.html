@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Easy Search</title>
+    <link rel="icon" href="./assets/appicon.png" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="topbar-left">
+          <nav class="menu-bar" aria-label="Application menu">
+          <button class="menu-bar-item nav-history-btn" data-nav-back type="button" disabled title="Go back (Alt+Left)">&#8592;</button>
+          <button class="menu-bar-item nav-history-btn" data-nav-forward type="button" disabled title="Go forward (Alt+Right)">&#8594;</button>
+          <button class="menu-bar-item" data-menu-edit type="button">
+            <span>Edit</span>
+          </button>
+          <div class="menu-view-group">
+            <button class="menu-bar-item" data-menu-view type="button">
+              <span>View</span>
+            </button>
+            <div class="menu-popover menu-view-popover" data-menu-view-popover hidden>
+              <button class="menu-popover-item" data-show-hidden-section="dictionary" type="button">Show Webster Dictionary</button>
+              <button class="menu-popover-item" data-show-hidden-section="concordance" type="button">Show Concordance</button>
+              <button class="menu-popover-item" data-show-hidden-section="bibleNames" type="button">Show Bible names</button>
+              <button class="menu-popover-item" data-show-hidden-section="biodata" type="button">Show Biodata</button>
+              <button class="menu-popover-item" data-show-hidden-section="verses" type="button">Show Bible verses</button>
+              <button class="menu-popover-item" data-show-hidden-section="commentary" type="button">Show Commentary</button>
+              <button class="menu-popover-item menu-popover-item-subtle" data-show-all-sections type="button">Show all sections</button>
+            </div>
+          </div>
+          <button class="menu-bar-item" data-open-preferences type="button">
+            <span>Preferences</span>
+          </button>
+          <button class="menu-bar-item" data-open-about type="button">
+            <span>About</span>
+          </button>
+          <button class="menu-bar-item" data-open-tutorial type="button">
+            <span>Tutorial</span>
+          </button>
+          <button class="menu-bar-item" data-focus-mode type="button" title="Focus mode — hide all panels except verses (F)">Focus</button>
+          </nav>
+        </div>
+
+        <div class="topbar-center">
+          <div class="search-wrap" data-search-wrap>
+            <span class="search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="icon">
+                <path
+                  d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.44 4.44 1.06-1.06-4.44-4.44A6.5 6.5 0 0 0 10.5 4Zm0 1.5a5 5 0 1 1 0 10a5 5 0 0 1 0-10Z"
+                />
+              </svg>
+            </span>
+            <input
+              class="search-input"
+              data-search-input
+              type="search"
+              placeholder="Type Word to Search"
+              aria-label="Search dictionary and Bible verses"
+            />
+            <div class="menu-popover search-history-popover" data-search-history-popover hidden>
+              <p class="search-history-label">Recent searches</p>
+              <div data-search-history-list></div>
+            </div>
+            <span class="select-shell search-filter-shell">
+              <select class="custom-select search-book-select" data-search-book-filter aria-label="Filter search results by book"></select>
+              <span class="select-chevron" aria-hidden="true"></span>
+            </span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="theme-toggle" data-theme-toggle type="button">
+          <span class="theme-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="icon">
+              <path
+                d="M12 3.25a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0V4a.75.75 0 0 1 .75-.75Zm0 14.75a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 12 18Zm8-6.75a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1 0-1.5H20ZM6.25 12a.75.75 0 0 1-.75.75H4a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 .75.75Zm10.7-5.2a.75.75 0 0 1 1.06 0l1.06 1.06a.75.75 0 1 1-1.06 1.06l-1.06-1.06a.75.75 0 0 1 0-1.06Zm-11.02 11.02a.75.75 0 0 1 1.06 0l1.06 1.06a.75.75 0 1 1-1.06 1.06L5.93 18.88a.75.75 0 0 1 0-1.06Zm12.08 1.06a.75.75 0 0 1 0-1.06l1.06-1.06a.75.75 0 1 1 1.06 1.06l-1.06 1.06a.75.75 0 0 1-1.06 0ZM7 6.8a.75.75 0 0 1 0 1.06L5.93 8.92a.75.75 0 0 1-1.06-1.06l1.06-1.06A.75.75 0 0 1 7 6.8ZM12 7.25a4.75 4.75 0 1 1 0 9.5a4.75 4.75 0 0 1 0-9.5Zm0 1.5a3.25 3.25 0 1 0 0 6.5a3.25 3.25 0 0 0 0-6.5Z"
+              />
+            </svg>
+          </span>
+          <span data-theme-label>Dark mode</span>
+          </button>
+        </div>
+
+      </header>
+
+      <section class="content" data-content>
+        <aside class="side-panel">
+          <p class="status-text" data-loading>Loading local data...</p>
+          <p class="status-text" data-empty hidden>No results found.</p>
+          <div class="summary-bar" data-summary hidden></div>
+
+          <article class="dictionary-card" data-section-id="dictionary" data-dictionary-card hidden>
+            <div class="card-head" data-section-head="true">
+              <p class="section-label">Webster Dictionary</p>
+              <span class="section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="icon">
+                  <path
+                    d="M6 4.75A2.75 2.75 0 0 1 8.75 2h8.5A2.75 2.75 0 0 1 20 4.75v14.5A2.75 2.75 0 0 1 17.25 22h-8.5A2.75 2.75 0 0 1 6 19.25V4.75Zm2.75-1.25A1.25 1.25 0 0 0 7.5 4.75v14.5c0 .69.56 1.25 1.25 1.25h8.5c.69 0 1.25-.56 1.25-1.25V4.75c0-.69-.56-1.25-1.25-1.25h-8.5ZM9 7.25a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 9 7.25Zm0 4a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 9 11.25Zm0 4a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 9 15.25Z"
+                  />
+                </svg>
+              </span>
+            </div>
+            <div class="stack-list dictionary-list" data-dictionary-list></div>
+          </article>
+
+          <div class="panel-resizer panel-resizer-horizontal panel-resizer-inline" data-resizer="side-panel" title="Resize dictionary and concordance"></div>
+
+          <article class="dictionary-card concordance-card" data-section-id="concordance" data-concordance-card hidden>
+            <div class="card-head" data-section-head="true">
+              <p class="section-label">Hebrew, Greek & BSB Concordance</p>
+              <span class="section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="icon">
+                  <path d="M4.75 4h10.5A2.75 2.75 0 0 1 18 6.75v10.5A2.75 2.75 0 0 1 15.25 20H4.75A2.75 2.75 0 0 1 2 17.25V6.75A2.75 2.75 0 0 1 4.75 4Zm0 1.5c-.69 0-1.25.56-1.25 1.25v10.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25V6.75c0-.69-.56-1.25-1.25-1.25H4.75Zm13 3A2.25 2.25 0 0 1 20 10.75v6.5A2.75 2.75 0 0 1 17.25 20h-1a.75.75 0 0 1 0-1.5h1c.69 0 1.25-.56 1.25-1.25v-6.5a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 1-1.5 0v-4.5A2.25 2.25 0 0 1 17.75 8.5Z" />
+                </svg>
+              </span>
+            </div>
+            <div class="stack-list concordance-list" data-concordance-list></div>
+          </article>
+        </aside>
+
+        <div class="panel-resizer" data-resizer="left" title="Resize dictionary panel"></div>
+
+        <section class="names-panel">
+          <article class="sub-panel" data-section-id="bibleNames" data-bible-names-card hidden>
+            <div class="card-head" data-section-head="true">
+              <p class="section-label">Bible names</p>
+              <span class="section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="icon">
+                  <path
+                    d="M12 3c2.7 0 4.47 1.08 5.63 2.66c1.08 1.46 1.62 3.33 1.62 5.18c0 5.12-3.88 8.72-7.25 10.16c-3.37-1.44-7.25-5.04-7.25-10.16c0-1.85.54-3.72 1.62-5.18C7.53 4.08 9.3 3 12 3Zm0 1.5c-2.17 0-3.5.84-4.43 2.1c-.88 1.19-1.32 2.73-1.32 4.29c0 4.2 3.12 7.3 5.75 8.57c2.63-1.27 5.75-4.37 5.75-8.57c0-1.56-.44-3.1-1.32-4.29C15.5 5.34 14.17 4.5 12 4.5Zm-.04 2.65a2.1 2.1 0 0 1 2.1 2.1a2.1 2.1 0 1 1-2.1-2.1Zm-3.16 7.8c.56-1.4 1.83-2.2 3.16-2.2c1.33 0 2.6.8 3.16 2.2a.75.75 0 0 1-1.39.56c-.33-.82-1.06-1.26-1.77-1.26s-1.44.44-1.77 1.26a.75.75 0 1 1-1.39-.56Z"
+                  />
+                </svg>
+              </span>
+            </div>
+            <div class="stack-list" data-bible-names-list></div>
+          </article>
+
+          <div class="panel-resizer panel-resizer-horizontal panel-resizer-inline" data-resizer="names-panel" title="Resize Bible names and biodata"></div>
+
+          <article class="sub-panel" data-section-id="biodata" data-biodata-card hidden>
+            <div class="card-head" data-section-head="true">
+              <p class="section-label">Biodata</p>
+              <span class="section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="icon">
+                  <path d="M12 3c2.7 0 4.47 1.08 5.63 2.66c1.08 1.46 1.62 3.33 1.62 5.18c0 5.12-3.88 8.72-7.25 10.16c-3.37-1.44-7.25-5.04-7.25-10.16c0-1.85.54-3.72 1.62-5.18C7.53 4.08 9.3 3 12 3Zm0 1.5c-2.17 0-3.5.84-4.43 2.1c-.88 1.19-1.32 2.73-1.32 4.29c0 4.2 3.12 7.3 5.75 8.57c2.63-1.27 5.75-4.37 5.75-8.57c0-1.56-.44-3.1-1.32-4.29C15.5 5.34 14.17 4.5 12 4.5Zm-.04 2.65a2.1 2.1 0 0 1 2.1 2.1a2.1 2.1 0 1 1-2.1-2.1Zm-3.16 7.8c.56-1.4 1.83-2.2 3.16-2.2c1.33 0 2.6.8 3.16 2.2a.75.75 0 0 1-1.39.56c-.33-.82-1.06-1.26-1.77-1.26s-1.44.44-1.77 1.26a.75.75 0 1 1-1.39-.56Z" />
+                </svg>
+              </span>
+            </div>
+            <div class="stack-list" data-biodata-list></div>
+          </article>
+        </section>
+
+        <div class="panel-resizer" data-resizer="middle" title="Resize Bible names panel"></div>
+
+        <section class="verses-panel main-panel">
+          <article class="sub-panel verse-panel" data-section-id="verses">
+            <div class="card-head" data-section-head="true">
+              <p class="section-label">Bible verses</p>
+              <span class="section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="icon">
+                  <path
+                    d="M7 3.75A2.75 2.75 0 0 1 9.75 1h7.5A2.75 2.75 0 0 1 20 3.75v16.5a.75.75 0 0 1-1.18.62L14 17.58l-4.82 3.29A.75.75 0 0 1 8 20.25V3.75Zm2.75-1.25c-.69 0-1.25.56-1.25 1.25v15.08l4.07-2.78a.75.75 0 0 1 .86 0l4.07 2.78V3.75c0-.69-.56-1.25-1.25-1.25h-7.5Z"
+                  />
+                </svg>
+              </span>
+            </div>
+            <div class="bible-controls">
+              <!-- Single unified control bar -->
+              <div class="bible-controls-top-row">
+                <div class="bible-version-field">
+                  <span class="navigator-label">Bible version</span>
+                  <div class="bible-translation-selector"></div>
+                  <select data-bible-version aria-hidden="true" tabindex="-1" hidden></select>
+                </div>
+                <form class="bible-navigator" data-bible-nav-form>
+                  <label class="navigator-field navigator-field-book">
+                    <span class="navigator-label">Book</span>
+                    <span class="select-shell">
+                      <select class="custom-select" data-bible-book aria-label="Select Bible book"></select>
+                      <span class="select-chevron" aria-hidden="true"></span>
+                    </span>
+                  </label>
+                  <label class="navigator-field">
+                    <span class="navigator-label">Ch</span>
+                    <span class="select-shell">
+                      <select class="custom-select" data-bible-chapter aria-label="Select chapter"></select>
+                      <span class="select-chevron" aria-hidden="true"></span>
+                    </span>
+                  </label>
+                  <label class="navigator-field">
+                    <span class="navigator-label">Vs</span>
+                    <span class="select-shell">
+                      <select class="custom-select" data-bible-verse aria-label="Select verse"></select>
+                      <span class="select-chevron" aria-hidden="true"></span>
+                    </span>
+                  </label>
+                  <button class="navigator-submit navigator-submit-icon" type="submit" aria-label="Open selected passage" title="Open selected passage">
+                    <svg viewBox="0 0 24 24" class="icon" aria-hidden="true">
+                      <path d="M5.75 3.5h7.5a.75.75 0 0 1 0 1.5h-5.69l10.22 10.22a.75.75 0 1 1-1.06 1.06L6.5 6.06v5.69a.75.75 0 0 1-1.5 0v-7.5a.75.75 0 0 1 .75-.75Zm12.5 5a.75.75 0 0 1 .75.75v8a2.75 2.75 0 0 1-2.75 2.75h-9.5A2.75 2.75 0 0 1 4 17.25v-9.5A2.75 2.75 0 0 1 6.75 5h2a.75.75 0 0 1 0 1.5h-2c-.69 0-1.25.56-1.25 1.25v9.5c0 .69.56 1.25 1.25 1.25h9.5c.69 0 1.25-.56 1.25-1.25v-8a.75.75 0 0 1 .75-.75Z" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
+              <!-- Second row: prev/next + compare + books + progress -->
+              <div class="bible-controls-second-row">
+                <div class="chapter-nav-arrows">
+                  <button class="chapter-nav-btn" data-chapter-prev type="button" title="Previous chapter (&#8592;)">&#8592;</button>
+                  <button class="chapter-nav-btn" data-chapter-next type="button" title="Next chapter (&#8594;)">&#8594;</button>
+                </div>
+                <div class="parallel-selector-row">
+                  <label class="parallel-selector-label" for="parallel-version-select">Compare:</label>
+                  <span class="select-shell parallel-select-shell">
+                    <select class="custom-select" id="parallel-version-select" data-parallel-version aria-label="Parallel translation">
+                      <option value="">None</option>
+                    </select>
+                    <span class="select-chevron" aria-hidden="true"></span>
+                  </span>
+                </div>
+                <div class="bible-results-tools">
+                  <button class="menu-popover-item" data-open-book-occurrences type="button">Books</button>
+                  <div class="menu-popover book-occurrences-popover" data-book-occurrences-popover hidden>
+                    <div class="book-occurrences-list" data-book-occurrences-list></div>
+                  </div>
+                </div>
+                <div class="reading-progress-bar-wrap">
+                  <div class="reading-progress-bar-track">
+                    <div class="reading-progress-bar-fill" data-reading-progress-bar style="width:0%"></div>
+                  </div>
+                  <span class="reading-progress-label" data-reading-progress-label></span>
+                </div>
+              </div>
+              <p class="navigator-status" data-bible-nav-status></p>
+            </div>
+            <div class="verse-list" data-verse-list></div>
+            <!-- Cross-references panel -->
+            <div class="cross-refs-panel" data-cross-refs-panel hidden>
+              <div class="cross-refs-head">
+                <p class="section-label">Cross-references</p>
+                <span class="cross-refs-title" data-cross-refs-title></span>
+              </div>
+              <div class="cross-refs-list" data-cross-refs-list></div>
+            </div>
+            <div class="verse-results-footer">
+              <button class="navigator-submit" data-verse-load-more type="button" hidden>Load more</button>
+            </div>
+          </article>
+
+          <div class="panel-resizer panel-resizer-horizontal panel-resizer-inline" data-resizer="commentary-panel" title="Resize bible verses and commentary"></div>
+
+          <article class="sub-panel commentary-panel" data-section-id="commentary" data-commentary-card>
+            <div class="card-head" data-section-head="true">
+              <p class="section-label">Commentary</p>
+              <span class="section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="icon">
+                  <path d="M4 5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v14l-4-2-3 2-3-2-4 2V5z" />
+                </svg>
+              </span>
+            </div>
+            <div class="commentary-toolbar">
+              <span class="select-shell">
+                <select class="custom-select" data-commentary-select aria-label="Select commentary source"></select>
+                <span class="select-chevron" aria-hidden="true"></span>
+              </span>
+            </div>
+            <div class="stack-list commentary-list" data-commentary-list></div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <dialog class="chapter-modal" data-chapter-modal>
+      <div class="chapter-shell">
+        <div class="chapter-header">
+          <div>
+            <p class="section-label">Chapter view</p>
+            <h2 class="chapter-title" data-chapter-title></h2>
+          </div>
+          <button class="modal-close" data-modal-close type="button" aria-label="Close chapter view">
+            ×
+          </button>
+        </div>
+        <div class="chapter-list" data-chapter-list></div>
+      </div>
+    </dialog>
+
+    <div class="verse-actions-popover" data-verse-actions-popover hidden>
+      <div class="verse-actions-shell">
+        <div class="verse-actions-header">
+          <p class="section-label">Verse Actions</p>
+          <p class="verse-actions-reference" data-verse-actions-title></p>
+        </div>
+        <div class="verse-actions-body">
+          <button class="verse-action-button" data-add-note type="button">Add Notes</button>
+          <div class="highlight-picker">
+            <p class="highlight-picker-label">Highlight</p>
+            <div class="highlight-color-list" data-highlight-color-list></div>
+          </div>
+          <button class="verse-action-button verse-action-button-subtle" data-clear-highlight type="button">Clear Highlight</button>
+          <button class="verse-action-button" data-view-full-chapter type="button">View Full Chapter</button>
+        </div>
+      </div>
+    </div>
+
+    <dialog class="notes-modal" data-notes-modal>
+      <div class="preferences-shell">
+        <div class="chapter-header">
+          <div>
+            <p class="section-label">Verse Notes</p>
+            <h2 class="chapter-title" data-notes-title></h2>
+          </div>
+          <button class="modal-close" data-notes-close type="button" aria-label="Close notes editor">
+            ×
+          </button>
+        </div>
+        <div class="preferences-body">
+          <label class="setting-row">
+            <span>Your notes</span>
+            <textarea class="notes-textarea" data-notes-input rows="8" placeholder="Write your notes for this verse..."></textarea>
+          </label>
+          <div class="notes-actions">
+            <button class="navigator-submit" data-save-note type="button">Save Note</button>
+            <button class="verse-action-button" data-clear-note type="button">Clear Note</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="preferences-modal" data-preferences-modal>
+      <div class="preferences-shell">
+        <div class="chapter-header">
+          <div>
+            <p class="section-label">Preferences</p>
+            <h2 class="chapter-title">Reader Settings</h2>
+          </div>
+          <button class="modal-close" data-preferences-close type="button" aria-label="Close preferences">
+            ×
+          </button>
+        </div>
+        <div class="preferences-body">
+          <label class="setting-row">
+            <span>Font size</span>
+            <input data-font-size type="range" min="10" max="24" step="1" />
+            <output data-font-size-value></output>
+          </label>
+
+          <label class="setting-row">
+            <span>Reading line height</span>
+            <input data-line-height type="range" min="1.4" max="2.2" step="0.1" />
+            <output data-line-height-value></output>
+          </label>
+
+          <label class="setting-row setting-row-toggle">
+            <span>Show search bar</span>
+            <span class="toggle-shell">
+              <input data-show-search-bar type="checkbox" />
+              <span class="toggle-track"></span>
+            </span>
+          </label>
+
+          <label class="setting-row setting-row-toggle">
+            <span>Auto-open Strong's concordance</span>
+            <span class="toggle-shell">
+              <input data-auto-open-strongs-concordance type="checkbox" />
+              <span class="toggle-track"></span>
+            </span>
+          </label>
+
+          <label class="setting-row setting-row-toggle">
+            <span>Show verse numbers</span>
+            <span class="toggle-shell">
+              <input data-show-verse-numbers type="checkbox" />
+              <span class="toggle-track"></span>
+            </span>
+          </label>
+
+          <label class="setting-row setting-row-toggle">
+            <span>Compact verse spacing</span>
+            <span class="toggle-shell">
+              <input data-compact-verse-spacing type="checkbox" />
+              <span class="toggle-track"></span>
+            </span>
+          </label>
+
+          <label class="setting-row">
+            <span>Font family</span>
+            <span class="select-shell">
+              <select class="custom-select" data-font-family aria-label="Select font family">
+                <option value="system">System (Inter / Segoe UI)</option>
+                <option value="serif">Serif (Georgia)</option>
+                <option value="mono">Monospace (Courier)</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="setting-row setting-row-toggle">
+            <span>Red letter mode (words of Jesus)</span>
+            <span class="toggle-shell">
+              <input data-red-letter-mode type="checkbox" />
+              <span class="toggle-track"></span>
+            </span>
+          </label>
+
+          <label class="setting-row">
+            <span>Shortcut: Open search</span>
+            <span class="select-shell">
+              <select class="custom-select" data-shortcut-open-search>
+                <option value="Ctrl+K">Ctrl+K</option>
+                <option value="Ctrl+F">Ctrl+F</option>
+                <option value="Alt+K">Alt+K</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="setting-row">
+            <span>Shortcut: Open notes</span>
+            <span class="select-shell">
+              <select class="custom-select" data-shortcut-open-notes>
+                <option value="N">N</option>
+                <option value="Alt+N">Alt+N</option>
+                <option value="Shift+N">Shift+N</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="setting-row">
+            <span>Shortcut: Toggle search bar</span>
+            <span class="select-shell">
+              <select class="custom-select" data-shortcut-toggle-search-bar>
+                <option value="Ctrl+Shift+S">Ctrl+Shift+S</option>
+                <option value="Alt+S">Alt+S</option>
+                <option value="Ctrl+Alt+S">Ctrl+Alt+S</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <p class="info-body">More shortcuts: <strong>Esc</strong> closes popups/menus, right-click any verse to open actions, and use your selected notes shortcut (default <strong>N</strong>) to open notes for the active verse.</p>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="about-modal" data-about-modal>
+      <div class="preferences-shell">
+        <div class="chapter-header">
+          <div>
+            <p class="section-label">About</p>
+            <h2 class="chapter-title">Easy Search</h2>
+          </div>
+          <button class="modal-close" data-about-close type="button" aria-label="Close about">
+            ×
+          </button>
+        </div>
+        <div class="preferences-body">
+          <p class="info-body">Easy Search is an offline Bible study app built for quick word lookup, reference lookup, Bible names, and Strong's concordance study without needing the internet.</p>
+          <p class="info-body">Use the menu bar to change preferences, hide or restore sections, and open the built-in help screens. Your Bible position, theme, and layout are saved locally so the app can reopen where you left off.</p>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="tutorial-modal" data-tutorial-modal>
+      <div class="preferences-shell">
+        <div class="chapter-header">
+          <div>
+            <p class="section-label">Tutorial</p>
+            <h2 class="chapter-title">How to use the app</h2>
+          </div>
+          <button class="modal-close" data-tutorial-close type="button" aria-label="Close tutorial">
+            ×
+          </button>
+        </div>
+        <div class="preferences-body">
+          <p class="info-body">Press <strong>Ctrl+K</strong> to open the search box, then type a word, phrase, or Bible reference. The search box stays hidden by default so the reader stays clean until you need it.</p>
+          <p class="info-body">Right-click selected text anywhere in the dictionary, Bible names, concordance, or verses and choose <strong>Lookup</strong> to search it instantly. Right-click a section title bar and choose <strong>Close section</strong> to remove that panel from the screen.</p>
+          <p class="info-body">Open the <strong>View</strong> menu to restore hidden sections. Use <strong>Show all sections</strong> when you want to bring everything back at once.</p>
+          <p class="info-body">Bible navigation supports short book names such as <strong>Prov</strong> for Proverbs and <strong>Pro</strong> for Proverbs, plus verse ranges like <strong>John 3:16-18</strong>.</p>
+          <p class="info-body">Press <strong>[</strong> or <strong>]</strong> to jump to the previous or next chapter. Use <strong>Alt+Left / Alt+Right</strong> to go back and forward through your navigation history.</p>
+          <p class="info-body">Hover over any Strong's number chip (e.g. <strong>H430</strong>) to see a quick definition tooltip. Click it to open the full lexicon entry. Press <strong>C</strong> to copy the active verse to clipboard.</p>
+          <p class="info-body">Press <strong>F</strong> to enter Focus mode — hides all panels except the Bible reader. Press <strong>F</strong> again or use the Focus button in the toolbar to exit.</p>
+        </div>
+      </div>
+    </dialog>
+
+
+    <div class="app-context-menu" data-app-context-menu hidden>
+      <button class="context-menu-item" data-context-lookup type="button">Lookup</button>
+      <button class="context-menu-item" data-context-close-section type="button">
+        <span class="context-menu-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" class="icon">
+            <path d="M6.25 5.5h11.5a.75.75 0 0 1 .75.75v11.5a.75.75 0 0 1-.75.75H6.25a.75.75 0 0 1-.75-.75V6.25a.75.75 0 0 1 .75-.75Zm1.47 3.28a.75.75 0 0 1 1.06 0L12 11.99l3.22-3.21a.75.75 0 1 1 1.06 1.06L13.06 13l3.22 3.22a.75.75 0 1 1-1.06 1.06L12 14.06l-3.22 3.22a.75.75 0 1 1-1.06-1.06L10.94 13 7.72 9.84a.75.75 0 0 1 0-1.06Z" />
+          </svg>
+        </span>
+        <span>Close section</span>
+      </button>
+    </div>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>
