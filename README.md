@@ -2,7 +2,7 @@
 
 Easy Search is a lightweight offline Bible study and search desktop app built with Electron. It is designed for fast reading, word lookup, reference lookup, dictionary study, Bible name research, Strong's concordance exploration, and commentary reading without requiring an internet connection during normal use.
 
-The app bundles its study data locally under `app/data`, so users can search and read immediately after installation. The interface is centered around a resizable study workspace with Bible text, dictionary entries, Bible names, biodata, concordance results, and commentary panels available side by side.
+The app bundles its study data locally under `app/data`, so users can search and read immediately after installation. The interface puts the Bible reader beside a single tabbed study sidebar for Strong's, dictionary entries, Bible names and biodata, and commentary. Comparison and reading progress live in Reader options, and cross-references expand when needed.
 
 ## Features
 
@@ -14,7 +14,8 @@ The app bundles its study data locally under `app/data`, so users can search and
 - Strong's concordance entries with definitions, transliteration details, and sample verse references.
 - Commentary panel with local Matthew Henry and Jamieson-Fausset-Brown commentary files.
 - Search history and book filtering for repeated study sessions.
-- Resizable panels for arranging dictionary, concordance, verses, names, biodata, and commentary.
+- A spacious Bible reader with a keyboard-accessible tabbed study sidebar.
+- Compact passage navigation, collapsible cross-references, and reader options for comparison and reading progress.
 - Right-click lookup for selected text inside study panels.
 - Local preferences for layout, theme, hidden sections, and shortcuts.
 - Windows installer and portable build support through `electron-builder`.

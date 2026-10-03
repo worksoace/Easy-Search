@@ -6,6 +6,7 @@
   "scripts": {
     "start": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$env:ELECTRON_RUN_AS_NODE=$null; electron .\"",
     "data:bibles": "node scripts/download-public-domain-bibles.js",
+    "data:compress": "node scripts/compress-db.js",
     "build:icon": "node scripts/build-icon.js",
     "build:installer-assets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer-assets.ps1",
     "build:portable": "npm run build:installer-assets && electron-builder --win portable",

@@ -97,8 +97,12 @@ const searchState = {
   previousVerseCandidates: null
 };
 
+function stripHtmlTags(value) {
+  return String(value || "").replace(/<[^>]+>/g, " ");
+}
+
 function normalizeText(value) {
-  return String(value || "").toLowerCase();
+  return stripHtmlTags(value).toLowerCase();
 }
 
 function normalizeSearchText(value) {
@@ -324,7 +328,45 @@ function parseReferenceQuery(query) {
   };
 }
 
+const EXTRA_VERSIONS = ["kjv", "niv", "nkjv", "asv", "web", "bbe", "darby", "ylt", "webster", "drc"];
+
+async function loadExtraTranslations(activeVersion) {
+  for (const code of EXTRA_VERSIONS) {
+    if (code === activeVersion) continue;
+    try {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      console.log(`[Worker] Loading translation: ${code}`);
+      const fileUrl = `appdata://local/translations/${code}.json`;
+      const response = await fetch(fileUrl);
+      if (!response.ok) continue;
+      const verses = await response.json();
+      
+      let count = 0;
+      for (const verse of verses) {
+        const key = `${verse.book}|${verse.chapter}|${verse.verse}`;
+        let entry = searchState.versesByReference.get(key);
+        if (!entry) {
+          entry = {
+            book: verse.book,
+            chapter: verse.chapter,
+            verse: verse.verse,
+            translations: {}
+          };
+          searchState.versesByReference.set(key, entry);
+        }
+        entry.translations[code] = verse.text;
+        count++;
+      }
+      console.log(`[Worker] Loaded and indexed ${count} verses from version: ${code}`);
+    } catch (e) {
+      console.error(`[Worker] Failed to load version ${code}:`, e);
+    }
+  }
+}
+
 function buildIndexes(payload) {
+  searchState.activeVersion = payload.activeVersion || "kjv";
+
   searchState.bible = payload.bible.map((verse) => ({
     ...verse,
     lowerText: normalizeText(verse.text),
@@ -332,10 +374,25 @@ function buildIndexes(payload) {
     tokens: tokenize(verse.text)
   }));
   searchState.books = [...new Set(payload.bible.map((verse) => verse.book))];
-  searchState.versesByReference = new Map(
-    searchState.bible.map((verse) => [`${verse.book}|${verse.chapter}|${verse.verse}`, verse])
-  );
+  
+  searchState.versesByReference.clear();
+  searchState.bible.forEach((verse) => {
+    const key = `${verse.book}|${verse.chapter}|${verse.verse}`;
+    searchState.versesByReference.set(key, {
+      book: verse.book,
+      chapter: verse.chapter,
+      verse: verse.verse,
+      translations: {
+        [searchState.activeVersion]: verse.text
+      }
+    });
+  });
+
   registerBookAliases(searchState.books);
+
+  setTimeout(() => {
+    loadExtraTranslations(searchState.activeVersion);
+  }, 1000);
 
   searchState.dictionary = Object.entries(payload.dictionary).map(([word, meaning]) => ({
     word,
@@ -512,7 +569,9 @@ function toPublicVerse(verse) {
     book: verse.book,
     chapter: verse.chapter,
     verse: verse.verse,
-    text: verse.text
+    text: verse.text,
+    version: verse.version || searchState.activeVersion || "kjv",
+    matchPercentage: verse.matchPercentage || 100
   };
 }
 
@@ -544,13 +603,17 @@ function searchVerses(query, options = {}) {
     if (reference.verse) {
       const endVerse = reference.endVerse || reference.verse;
       for (let verseNumber = reference.verse; verseNumber <= endVerse; verseNumber += 1) {
-        const verse = searchState.versesByReference.get(`${reference.book}|${reference.chapter}|${verseNumber}`);
-        if (verse) {
+        const entry = searchState.versesByReference.get(`${reference.book}|${reference.chapter}|${verseNumber}`);
+        if (entry) {
+          const text = entry.translations[searchState.activeVersion] || Object.values(entry.translations)[0] || "";
+          const ver = entry.translations[searchState.activeVersion] ? searchState.activeVersion : Object.keys(entry.translations)[0];
           referenceItems.push({
-            book: verse.book,
-            chapter: verse.chapter,
-            verse: verse.verse,
-            text: verse.text
+            book: entry.book,
+            chapter: entry.chapter,
+            verse: entry.verse,
+            text: text,
+            version: ver,
+            matchPercentage: 100
           });
         }
       }
@@ -562,7 +625,9 @@ function searchVerses(query, options = {}) {
               book: verse.book,
               chapter: verse.chapter,
               verse: verse.verse,
-              text: verse.text
+              text: verse.text,
+              version: searchState.activeVersion,
+              matchPercentage: 100
             });
           }
         }
@@ -586,30 +651,82 @@ function searchVerses(query, options = {}) {
     };
   }
 
-  const baseCandidates =
-    searchState.previousVerseCandidates &&
-    normalizedQuery.startsWith(searchState.previousQuery) &&
-    selectedBook === searchState.previousBook
-      ? searchState.previousVerseCandidates
-      : searchState.bible;
+  // Tokenize and clean keywords
+  const queryTokens = tokenize(normalizedQuery);
+  if (!queryTokens.length) {
+    return {
+      total: 0,
+      totalAll: 0,
+      items: [],
+      hasMore: false,
+      bookCounts: [],
+      matchMode: "empty",
+      referenceLabel: ""
+    };
+  }
 
-  const nextCandidates = [];
-  const isPhrase = normalizedQuery.includes(" ");
+  const STOP_WORDS = new Set(["a", "an", "the", "and", "or", "in", "of", "to", "is", "for", "with", "that", "this", "he", "shall", "unto", "be", "it"]);
+  const hasContentWord = queryTokens.some(token => !STOP_WORDS.has(token));
+  const filteredTokens = hasContentWord ? queryTokens.filter(token => !STOP_WORDS.has(token)) : queryTokens;
 
-  for (const verse of baseCandidates) {
-    const phraseMatch = isPhrase && includesLoose(verse.normalizedText, normalizedQuery);
-    const tokenSequenceMatch =
-      isPhrase &&
-      normalizeText(verse.text).includes(normalizedQuery);
-    const match = isPhrase
-      ? phraseMatch || tokenSequenceMatch
-      : startsWithToken(verse.tokens, normalizedQuery) || includesLoose(verse.normalizedText, normalizedQuery);
+  const candidates = [];
+  const lowercaseQuery = query.toLowerCase().trim();
 
-    if (match) {
-      nextCandidates.push(verse);
+  for (const [key, entry] of searchState.versesByReference) {
+    let bestScore = 0;
+    let bestText = "";
+    let bestVersion = "";
+    let bestPercentage = 0;
+
+    for (const [version, text] of Object.entries(entry.translations)) {
+      const lowerText = normalizeText(text);
+      let matchedCount = 0;
+
+      for (const token of filteredTokens) {
+        if (lowerText.includes(token)) {
+          matchedCount++;
+        }
+      }
+
+      if (matchedCount > 0) {
+        const matchPercentage = Math.round((matchedCount / filteredTokens.length) * 100);
+        const hasExactPhrase = lowerText.includes(lowercaseQuery);
+        const score = matchPercentage + (hasExactPhrase ? 1000 : 0);
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestText = text;
+          bestVersion = version;
+          bestPercentage = matchPercentage;
+        }
+      }
+    }
+
+    if (bestScore > 0) {
+      candidates.push({
+        book: entry.book,
+        chapter: entry.chapter,
+        verse: entry.verse,
+        text: bestText,
+        version: bestVersion,
+        matchPercentage: bestPercentage,
+        score: bestScore
+      });
     }
   }
 
+  // Sort candidates by relevance score, then index/ordering sequence
+  candidates.sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    const bookOrder = searchState.books.indexOf(a.book) - searchState.books.indexOf(b.book);
+    if (bookOrder !== 0) return bookOrder;
+    if (a.chapter !== b.chapter) return a.chapter - b.chapter;
+    return a.verse - b.verse;
+  });
+
+  const nextCandidates = candidates;
   searchState.previousQuery = normalizedQuery;
   searchState.previousBook = selectedBook;
   searchState.previousVerseCandidates = nextCandidates;
@@ -633,7 +750,7 @@ function searchVerses(query, options = {}) {
     items: pageItems,
     hasMore: offset + pageSize < filteredCandidates.length,
     bookCounts,
-    matchMode: isPhrase ? "phrase" : "word",
+    matchMode: lowercaseQuery.includes(" ") ? "phrase" : "word",
     referenceLabel: ""
   };
 }

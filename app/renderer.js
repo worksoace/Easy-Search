@@ -1,5 +1,5 @@
-﻿// Renderer logic: search, dictionary focus, preferences, layout resizing, and chapter interactions.
-const DEFAULT_LAYOUT = { left: 430, middle: 320, sidePanelTopHeight: null, namesPanelTopHeight: null, versesPanelTopHeight: null };
+// Renderer logic: search, dictionary focus, preferences, layout resizing, and chapter interactions.
+const DEFAULT_LAYOUT = { left: 280, middle: 260, sidePanelTopHeight: 300, namesPanelTopHeight: 280, versesPanelTopHeight: 450 };
 const DEFAULT_SHORTCUTS = {
   openSearch: "Ctrl+K",
   openNotes: "N",
@@ -128,8 +128,9 @@ const state = {
 
 const elements = {
   searchInput: document.querySelector("[data-search-input]"),
-  themeToggle: document.querySelector("[data-theme-toggle]"),
+  themeToggle: document.querySelector("[data-theme-dropdown-btn]"),
   themeLabel: document.querySelector("[data-theme-label]"),
+  themePopover: document.querySelector("[data-theme-popover]"),
   menuEdit: document.querySelector("[data-menu-edit]"),
   menuView: document.querySelector("[data-menu-view]"),
   searchWrap: document.querySelector("[data-search-wrap]"),
@@ -224,10 +225,12 @@ const dynamicElements = {
 
 function debounce(callback, delay) {
   let timeoutId;
-  return (...args) => {
+  const invoke = (...args) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => callback(...args), delay);
   };
+  invoke.cancel = () => clearTimeout(timeoutId);
+  return invoke;
 }
 
 function escapeRegExp(value) {
@@ -388,8 +391,8 @@ function createNoteIndicator(noteText) {
   button.setAttribute("aria-label", "View note");
   button.title = noteText ? `Note: ${noteText}` : "Note";
   button.innerHTML = `
-    <svg viewBox="0 0 24 24" class="icon" aria-hidden="true">
-      <path d="M7 3h10a2 2 0 0 1 2 2v12l-4-2-3 2-3-2-4 2V5a2 2 0 0 1 2-2z"></path>
+    <svg viewBox="0 0 448 512" class="icon" aria-hidden="true">
+      <path fill="currentColor" d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H288V368c0-26.5 21.5-48 48-48H448V96c0-35.3-28.7-64-64-64H64zM448 358.6L338.6 468c4.2 6.7 9.8 12.3 16.5 16.5L468 375.1c-4.2-6.7-9.8-12.3-16.5-16.5z"/>
     </svg>
   `;
   button.addEventListener("click", (event) => {
@@ -427,6 +430,7 @@ async function fetchJsonWithFallback(urls) {
 }
 
 function applyLayout() {
+  if (elements.content?.classList.contains("study-workspace")) return;
   document.documentElement.style.setProperty("--left-width", `${state.layout.left}px`);
   document.documentElement.style.setProperty("--middle-width", `${state.layout.middle}px`);
 
@@ -454,8 +458,16 @@ function applyLayout() {
       return storedTopHeight;
     }
 
+    const rectHeight = panelElement.getBoundingClientRect().height;
+    if (rectHeight === 0) {
+      if (Number.isFinite(storedTopHeight)) {
+        panelElement.style.gridTemplateRows = `${storedTopHeight}px 2px 1fr`;
+      }
+      return storedTopHeight;
+    }
+
     const rowGap = Number.parseFloat(getComputedStyle(panelElement).rowGap || getComputedStyle(panelElement).gap || "0") || 0;
-    const availableHeight = Math.max(minHeight * 2, panelElement.getBoundingClientRect().height - rowGap * 2 - 2);
+    const availableHeight = Math.max(minHeight * 2, rectHeight - rowGap * 2 - 2);
     const ratioMinimum = Math.floor(availableHeight * minTopRatio);
     const effectiveMinHeight = Math.max(minHeight, ratioMinimum);
     const defaultTopFromRatio = Math.floor(availableHeight * defaultTopRatio);
@@ -617,10 +629,34 @@ function applyPreferences() {
   setSearchVisible(state.searchVisible);
 }
 
+const THEME_NAMES = {
+  light: "Light Mode",
+  dark: "Charcoal Dark",
+  sepia: "Warm Sepia",
+  nord: "Nord Frost",
+  ocean: "Midnight Ocean",
+  forest: "Calming Forest",
+  black: "AMOLED Black",
+  espresso: "Chocolate Dark"
+};
+
 function setTheme(theme) {
+  if (!THEME_NAMES[theme]) theme = "light";
   document.documentElement.dataset.theme = theme;
   localStorage.setItem("theme", theme);
-  elements.themeLabel.textContent = theme === "dark" ? "Light mode" : "Dark mode";
+  if (elements.themeLabel) {
+    elements.themeLabel.textContent = THEME_NAMES[theme];
+  }
+
+  // Highlight active theme card in settings modal
+  document.querySelectorAll(".theme-card").forEach(card => {
+    card.classList.toggle("active", card.dataset.themeId === theme);
+  });
+
+  // Highlight active theme item in dropdown popover
+  document.querySelectorAll("[data-set-theme]").forEach(item => {
+    item.classList.toggle("active", item.dataset.setTheme === theme);
+  });
 }
 
 function setSearchVisible(visible) {
@@ -645,11 +681,61 @@ function closeSearch() {
   setSearchVisible(false);
 }
 
-function openPreferencesModal() {
+function openThemePopover() {
+  closeViewMenu();
+  closeBookOccurrencesPopover();
+  closeSearchHistory();
+  elements.themePopover.hidden = false;
+  requestAnimationFrame(() => positionMenuPopover(elements.themePopover, elements.themeToggle));
+}
+
+function closeThemePopover() {
+  if (elements.themePopover) {
+    elements.themePopover.hidden = true;
+  }
+}
+
+function toggleThemePopover() {
+  if (elements.themePopover.hidden) {
+    openThemePopover();
+  } else {
+    closeThemePopover();
+  }
+}
+
+function switchSettingsTab(tabId) {
+  // Update nav item active states
+  const navItems = document.querySelectorAll("[data-settings-tab]");
+  navItems.forEach(item => {
+    item.classList.toggle("active", item.dataset.settingsTab === tabId);
+  });
+
+  // Update tab panel visibility
+  const panels = document.querySelectorAll("[data-settings-panel]");
+  panels.forEach(panel => {
+    panel.hidden = panel.dataset.settingsPanel !== tabId;
+  });
+
+  // Update header title
+  const titleLabel = document.querySelector("[data-settings-title-label]");
+  if (titleLabel) {
+    const titles = {
+      general: "General Settings",
+      appearance: "Appearance Settings",
+      shortcuts: "Keyboard Shortcuts",
+      about: "About & Help"
+    };
+    titleLabel.textContent = titles[tabId] || "Settings";
+  }
+}
+
+function openPreferencesModal(tab = "general") {
+  const tabId = (typeof tab === "string") ? tab : "general";
   hideContextMenu();
   closeViewMenu();
+  closeThemePopover();
+  switchSettingsTab(tabId);
   elements.preferencesModal.showModal();
-  requestAnimationFrame(() => positionMenuDialog(elements.preferencesModal, elements.openPreferences));
 }
 
 function closePreferencesModal() {
@@ -726,6 +812,7 @@ function isSectionHidden(sectionId) {
 function setSectionHidden(sectionId, hidden) {
   state.hiddenSections[sectionId] = Boolean(hidden);
   saveStoredJson("hidden-sections", state.hiddenSections);
+  if (!hidden && sectionId !== "verses") selectStudyTab(sectionId === "bibleNames" || sectionId === "biodata" ? "names" : sectionId);
   refreshRenderedContent();
   refreshViewMenu();
 }
@@ -930,7 +1017,8 @@ function applyVerseHighlight(element, verse) {
 
 function setLookupFocus(value) {
   state.lookupFocusQuery = value.trim();
-  state.activeStrongsLookup = "";
+  selectStudyTab("dictionary");
+  // Keep the selected lexicon entry while looking up ordinary words.
   // If we focus on a word, it's no longer a Strong's lookup intent
   const isStrongsNumber = /^[HG]\d+/i.test(state.lookupFocusQuery);
   state.lastLookupWasStrongs = isStrongsNumber;
@@ -969,7 +1057,7 @@ function lookupSelectedText(value, isExplicitStrongs = false) {
   // Detect if this is a Strong's number (e.g. H430, G80)
   const isStrongsNumber = /^[HG]\d+/i.test(query);
   state.lastLookupWasStrongs = isExplicitStrongs || isStrongsNumber;
-  state.activeStrongsLookup = isStrongsNumber ? query.toUpperCase() : "";
+  if (isStrongsNumber) state.activeStrongsLookup = query.toUpperCase();
 
   openSearch();
   elements.searchInput.value = query;
@@ -1193,6 +1281,14 @@ function syncBibleNavigatorInputs() {
     elements.bibleVerseInput.appendChild(option);
   }
   elements.bibleVerseInput.value = verse ? String(verse) : "";
+  const previous = document.querySelectorAll("[data-chapter-prev]");
+  const next = document.querySelectorAll("[data-chapter-next]");
+  const isFirst = book === state.books[0] && chapter === 1;
+  const isLast = book === state.books[state.books.length - 1] && chapter === maxChapter;
+  previous.forEach(btn => btn.disabled = isFirst);
+  next.forEach(btn => btn.disabled = isLast);
+  const indicator = document.querySelector("[data-chapter-nav-indicator]");
+  if (indicator) indicator.textContent = `${book || "Genesis"} ${chapter || 1} of ${maxChapter || 50}`;
 }
 
 function buildHighlightColorButtons() {
@@ -1866,6 +1962,24 @@ async function loadBibleVersion(versionCode) {
     }
   }
 
+function openNavigationPassage() {
+  debouncedSearch.cancel();
+  const crossReferences = document.querySelector("[data-cross-refs-panel]");
+  if (crossReferences) { crossReferences.hidden = true; crossReferences.open = false; }
+  // Invalidate pending search replies before opening the reader.
+  state.requestId += 1;
+  state.query = "";
+  elements.searchInput.value = "";
+  state.verseResultsPage = 1;
+  state.pagedVerseItems = [];
+  state.lastResults = getEmptyResults();
+  elements.summary.hidden = true;
+  elements.empty.hidden = true;
+  if (elements.verseLoadMore) elements.verseLoadMore.hidden = true;
+  closeBookOccurrencesPopover();
+  renderNavigationSelection();
+}
+
 function renderNavigationSelection() {
   syncBibleNavigatorInputs();
   const verses = buildNavigationResults();
@@ -1875,7 +1989,7 @@ function renderNavigationSelection() {
   const selectionText = verse
     ? `Showing ${getReferenceLabel(book, chapter, verse)}.`
     : `Showing full chapter ${getReferenceLabel(book, chapter)}.`;
-  setBibleNavigationStatus(`${selectionText} Click any verse to open the full chapter.`);
+  setBibleNavigationStatus(`${selectionText} Select a word to study it. Use [ and ] to move between chapters.`);
   saveBibleSelection();
   pushNavHistory({ ...state.navigationSelection });
 }
@@ -2098,6 +2212,7 @@ function isolateStrongsLookup(strongsNum) {
   // dictionary and Bible names results from the current search are preserved.
   state.activeStrongsLookup = String(strongsNum).trim().toUpperCase();
   state.lastLookupWasStrongs = true;
+  selectStudyTab("concordance");
   if (state.currentVersion === "kjv_plus" && state.preferences.autoOpenStrongsConcordance) {
     setSectionHidden("concordance", false);
   } else {
@@ -2110,53 +2225,61 @@ function createInteractiveTextNode(text, query = "") {
   const fragment = document.createDocumentFragment();
   const loweredQuery = (query || "").trim().toLowerCase();
 
-  // Strip <em>...</em> tags but preserve their content as italic spans
-  let cleanedText = String(text);
+  let cleanedText = String(text || "");
 
-  // Split on <em>...</em> first to handle italics, then process each segment
-  const emParts = cleanedText.split(/(<em>.*?<\/em>)/gi);
+  // Normalize formatting tags: convert <i> and <add> to <em>, <b> to <strong>
+  cleanedText = cleanedText
+    .replace(/<i\b[^>]*>/gi, "<em>")
+    .replace(/<\/i>/gi, "</em>")
+    .replace(/<add\b[^>]*>/gi, "<em>")
+    .replace(/<\/add>/gi, "</em>")
+    .replace(/<b\b[^>]*>/gi, "<strong>")
+    .replace(/<\/b>/gi, "</strong>")
+    .replace(/<(pb|f|note|xref|ref)\b[^>]*\/?>.*?<\/\1>/gi, "")
+    .replace(/<(pb|f|note|xref|ref)\b[^>]*\/?>/gi, "");
 
-  const processPlainSegment = (segment, isItalic) => {
-    // Robust regex to split words and Strong's tags (handles [H123], [G123a], etc)
-    const splitPattern = /([A-Za-z']+|\[[HhGg]\d+[A-Za-z]?\])/g;
-    const parts = segment.split(splitPattern);
-    
-    const hasStrongs = segment.includes('[H') || segment.includes('[G') || segment.includes('[h') || segment.includes('[g');
-    if (hasStrongs) {
-      console.log(`[DEBUG] Processing KJV+ segment: "${segment.substring(0, 50)}..."`);
-      console.log(`[DEBUG] Split parts:`, parts);
-    }
+  // Split into styled segments (em, strong, or plain)
+  const segmentPattern = /(<em>[\s\S]*?<\/em>|<strong>[\s\S]*?<\/strong>)/gi;
+  const rawSegments = cleanedText.split(segmentPattern);
+
+  const processSegmentTokens = (segment, isItalic, isBold) => {
+    // Match words, Strong's number tags [H1234], [G5678], [H1234a], {H1234}, <H1234>, or non-word chunks
+    const tokenPattern = /([A-Za-z\u00C0-\u024F\u1E00-\u1EFF']+|\[[HhGg]\d+[A-Za-z]?\]|\{[HhGg]\d+[A-Za-z]?\}|<[HhGg]\d+[A-Za-z]?>)/g;
+    const parts = segment.split(tokenPattern);
 
     parts.forEach((part) => {
       if (!part) return;
 
-      // Detect Strong's number tag like [H430] or [H430a]
-      if (part.startsWith("[") && part.endsWith("]") && (part.includes("H") || part.includes("G") || part.includes("h") || part.includes("g"))) {
-        const strongsNum = part.slice(1, -1).toUpperCase();
+      // Detect Strong's number tag like [H430], {H430}, <H430>, [G3056]
+      const strongsMatch = part.match(/^[\[{<]([HhGg]\d+[A-Za-z]?)[\]}>]$/);
+      if (strongsMatch) {
+        const strongsNum = strongsMatch[1].toUpperCase();
         const chip = document.createElement("button");
         chip.type = "button";
         chip.className = "strongs-chip";
         chip.textContent = strongsNum;
-        chip.title = `Look up ${strongsNum} in the lexicon`;
+        chip.classList.toggle("is-selected", state.activeStrongsLookup === strongsNum);
+        chip.setAttribute("aria-pressed", String(state.activeStrongsLookup === strongsNum));
+        chip.title = `Strong's ${strongsNum}: click to study`;
         chip.dataset.strongsNumber = strongsNum;
         chip.addEventListener("click", (event) => {
           event.stopPropagation();
           hideStrongsTooltip();
           isolateStrongsLookup(strongsNum);
         });
-        chip.addEventListener("mouseenter", (event) => {
+        chip.addEventListener("mouseenter", () => {
           showStrongsTooltip(strongsNum, chip);
         });
         chip.addEventListener("mouseleave", () => {
-          // Small delay so user can move to tooltip
           setTimeout(() => {
             const tooltip = dynamicElements.strongsTooltip;
             if (tooltip && !tooltip.matches(":hover")) hideStrongsTooltip();
-          }, 120);
+          }, 140);
         });
-        
+
         if (isItalic) {
           const em = document.createElement("em");
+          em.className = "verse-italic";
           em.appendChild(chip);
           fragment.appendChild(em);
         } else {
@@ -2165,13 +2288,14 @@ function createInteractiveTextNode(text, query = "") {
         return;
       }
 
-      // Detect words for lookup (letters and apostrophes only)
-      if (/^[A-Za-z']+$/.test(part)) {
+      // Detect words for interactive lookup
+      if (/^[A-Za-z\u00C0-\u024F\u1E00-\u1EFF']+$/.test(part)) {
         const cleanWord = part.replace(/^'+|'+$/g, "");
         const button = document.createElement("button");
         button.type = "button";
         button.className = "word-chip";
         if (isItalic) button.classList.add("word-chip-italic");
+        if (isBold) button.classList.add("word-chip-bold");
         button.textContent = part;
         if (loweredQuery && normalizeText(part).includes(loweredQuery)) {
           button.classList.add("word-chip-highlight");
@@ -2180,13 +2304,26 @@ function createInteractiveTextNode(text, query = "") {
           event.stopPropagation();
           if (cleanWord) setLookupFocus(cleanWord);
         });
-        fragment.appendChild(button);
+
+        if (isItalic) {
+          const em = document.createElement("em");
+          em.className = "verse-italic";
+          em.appendChild(button);
+          fragment.appendChild(em);
+        } else if (isBold) {
+          const strong = document.createElement("strong");
+          strong.appendChild(button);
+          fragment.appendChild(strong);
+        } else {
+          fragment.appendChild(button);
+        }
         return;
       }
 
-      // Fallback for symbols, digits outside brackets, punctuation, spaces
+      // Plain punctuation, whitespace, symbols
       if (isItalic && part.trim()) {
         const em = document.createElement("em");
+        em.className = "verse-italic";
         em.appendChild(document.createTextNode(part));
         fragment.appendChild(em);
       } else {
@@ -2195,12 +2332,16 @@ function createInteractiveTextNode(text, query = "") {
     });
   };
 
-  emParts.forEach((segment) => {
-    if (/^<em>(.*)<\/em>$/i.test(segment)) {
-      const inner = segment.replace(/^<em>(.*)<\/em>$/i, "$1");
-      processPlainSegment(inner, true);
+  rawSegments.forEach((segment) => {
+    if (!segment) return;
+    if (/^<em>([\s\S]*?)<\/em>$/i.test(segment)) {
+      const inner = segment.replace(/^<em>([\s\S]*?)<\/em>$/i, "$1");
+      processSegmentTokens(inner, true, false);
+    } else if (/^<strong>([\s\S]*?)<\/strong>$/i.test(segment)) {
+      const inner = segment.replace(/^<strong>([\s\S]*?)<\/strong>$/i, "$1");
+      processSegmentTokens(inner, false, true);
     } else {
-      processPlainSegment(segment, false);
+      processSegmentTokens(segment, false, false);
     }
   });
 
@@ -2370,7 +2511,7 @@ function renderBiodata(primaryBio, query) {
 function renderConcordanceList(items, query) {
   elements.concordanceList.innerHTML = "";
 
-  if (isSectionHidden("concordance") || state.currentVersion !== "kjv_plus" || !state.lastLookupWasStrongs) {
+  if (isSectionHidden("concordance") || (!state.activeStrongsLookup && (state.currentVersion !== "kjv_plus" || !state.lastLookupWasStrongs))) {
     elements.concordanceCard.hidden = true;
     return;
   }
@@ -2407,22 +2548,34 @@ function renderConcordanceList(items, query) {
     code.textContent = item.source === "bsb" ? "BSB" : item.number;
 
     const lemma = document.createElement("h3");
-    lemma.className = "info-title";
+    lemma.className = "info-title concordance-lemma";
     lemma.innerHTML = highlightText(item.source === "bsb" ? item.entry : item.lemma || item.xlit || item.number, query);
 
     head.append(code, lemma);
 
-    const meta = document.createElement("p");
+    const meta = document.createElement("div");
     meta.className = "concordance-meta";
     const strongsKey = item.number ? String(item.number).trim().toUpperCase() : "";
     const strongsEntry = strongsKey ? state.strongsOccurrences.entries[strongsKey] : null;
     const strongsSummary = strongsEntry && Number.isFinite(strongsEntry.total)
-      ? `Total occurrences: ${strongsEntry.total}`
+      ? `${strongsEntry.total} occurrences`
       : "";
 
-    meta.textContent = item.source === "bsb"
-      ? `${item.occurrences || 0} occurrences${(item.samples || []).length ? ` • ${(item.samples || []).map((sample) => sample.reference).filter(Boolean).slice(0, 3).join(" • ")}` : ""}`
-      : [item.xlit, item.pronounce, strongsSummary].filter(Boolean).join(" • ");
+    if (item.source === "bsb") {
+      meta.textContent = `${item.occurrences || 0} occurrences${(item.samples || []).length ? ` • ${(item.samples || []).map((sample) => sample.reference).filter(Boolean).slice(0, 3).join(" • ")}` : ""}`;
+    } else {
+      let metaHtml = "";
+      if (item.xlit) {
+        metaHtml += `<span class="lexicon-xlit">${item.xlit}</span>`;
+      }
+      if (item.pronounce) {
+        metaHtml += `<span class="lexicon-pronounce">${item.pronounce}</span>`;
+      }
+      if (strongsSummary) {
+        metaHtml += `<span class="lexicon-occurrences">${strongsSummary}</span>`;
+      }
+      meta.innerHTML = metaHtml;
+    }
 
     const description = document.createElement("p");
     description.className = "info-body";
@@ -2512,7 +2665,7 @@ function openChapterModal(selectedVerse) {
     chapterCopyBtn.className = "verse-copy-btn";
     chapterCopyBtn.title = "Copy verse";
     chapterCopyBtn.setAttribute("aria-label", "Copy verse");
-    chapterCopyBtn.innerHTML = '<svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1M8 4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1H8V4Zm0 0H6m10 4h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-2"/></svg>';
+    chapterCopyBtn.innerHTML = '<svg viewBox="0 0 448 512" class="icon" aria-hidden="true"><path fill="currentColor" d="M384 336H192c-8.8 0-16-7.2-16-16V64c0-8.8 7.2-16 16-16l140.1 0L384 99.9V320c0 8.8-7.2 16-16 16zM192 0C156.7 0 128 28.7 128 64V320c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V99.9c0-17-6.7-33.3-18.7-45.3L377.4 18.7C365.3 6.7 349 0 332.1 0H192zM64 128c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H256c35.3 0 64-28.7 64-64V416H256v32c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192c0-8.8 7.2-16 16-16h32V128H64z"/></svg>';
     chapterCopyBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       copyVerseToClipboard(entry);
@@ -2710,6 +2863,20 @@ function renderVerses(verses, query) {
 
       const text = document.createElement("p");
       text.className = "verse-text";
+      if (verse.version && verse.version !== state.currentVersion) {
+        const badge = document.createElement("span");
+        badge.className = "verse-version-badge";
+        badge.textContent = verse.version.toUpperCase();
+        if (verse.matchPercentage) {
+          badge.textContent += ` (${verse.matchPercentage}%)`;
+        }
+        text.appendChild(badge);
+      } else if (verse.matchPercentage && query) {
+        const badge = document.createElement("span");
+        badge.className = "verse-version-badge";
+        badge.textContent = `${verse.matchPercentage}%`;
+        text.appendChild(badge);
+      }
       text.appendChild(createInteractiveTextNode(verse.text, query));
 
       const copyBtn = document.createElement("button");
@@ -2717,7 +2884,7 @@ function renderVerses(verses, query) {
       copyBtn.className = "verse-copy-btn";
       copyBtn.title = "Copy verse";
       copyBtn.setAttribute("aria-label", "Copy verse");
-      copyBtn.innerHTML = '<svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1M8 4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1H8V4Zm0 0H6m10 4h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-2"/></svg>';
+      copyBtn.innerHTML = '<svg viewBox="0 0 448 512" class="icon" aria-hidden="true"><path fill="currentColor" d="M384 336H192c-8.8 0-16-7.2-16-16V64c0-8.8 7.2-16 16-16l140.1 0L384 99.9V320c0 8.8-7.2 16-16 16zM192 0C156.7 0 128 28.7 128 64V320c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V99.9c0-17-6.7-33.3-18.7-45.3L377.4 18.7C365.3 6.7 349 0 332.1 0H192zM64 128c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H256c35.3 0 64-28.7 64-64V416H256v32c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192c0-8.8 7.2-16 16-16h32V128H64z"/></svg>';
       copyBtn.addEventListener("click", (event) => {
         event.stopPropagation();
         copyVerseToClipboard(verse);
@@ -2939,6 +3106,7 @@ function setLoading(isLoading) {
 }
 
 function canUseEdgeResize() {
+  if (elements.content?.classList.contains("study-workspace")) return false;
   return window.innerWidth > 860 && !elements.content?.classList.contains("is-stacked");
 }
 
@@ -3117,7 +3285,7 @@ function navigateBack() {
   syncBibleNavigatorInputs();
   saveBibleSelection();
   void renderCommentaryPanel();
-  if (!state.query.trim()) renderNavigationSelection();
+  openNavigationPassage();
   updateNavHistoryButtons();
 }
 
@@ -3130,7 +3298,7 @@ function navigateForward() {
   syncBibleNavigatorInputs();
   saveBibleSelection();
   void renderCommentaryPanel();
-  if (!state.query.trim()) renderNavigationSelection();
+  openNavigationPassage();
   updateNavHistoryButtons();
 }
 
@@ -3192,17 +3360,8 @@ function toggleFocusMode() {
   document.documentElement.classList.toggle("focus-mode", state.focusMode);
   const btn = document.querySelector("[data-focus-mode]");
   if (btn) btn.textContent = state.focusMode ? "Exit Focus" : "Focus";
-  if (state.focusMode) {
-    state.hiddenSections.dictionary = true;
-    state.hiddenSections.concordance = true;
-    state.hiddenSections.bibleNames = true;
-    state.hiddenSections.biodata = true;
-    state.hiddenSections.commentary = true;
-    refreshRenderedContent();
-    refreshViewMenu();
-  } else {
-    restoreAllSections();
-  }
+  // Focus only changes presentation, preserving the current study and visibility preferences.
+
 }
 
 // ─── Inline Strong's Tooltip ──────────────────────────────────────────────────
@@ -3258,12 +3417,21 @@ function hideStrongsTooltip() {
   if (dynamicElements.strongsTooltip) dynamicElements.strongsTooltip.setAttribute("hidden", "");
 }
 
-// ─── Copy Verse ───────────────────────────────────────────────────────────────
+function stripVerseForClipboard(text) {
+  return String(text || "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\[[HG]\d+[A-Za-z]?\]/gi, "")
+    .replace(/\{[HG]\d+[A-Za-z]?\}/gi, "")
+    .replace(/<[HG]\d+[A-Za-z]?>/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 function copyVerseToClipboard(verse) {
   const ref = verse.book + " " + verse.chapter + ":" + verse.verse;
   const versionLabel = state.currentVersion.toUpperCase();
-  const text = ref + " (" + versionLabel + ") - " + verse.text;
+  const cleanText = stripVerseForClipboard(verse.text);
+  const text = ref + " (" + versionLabel + ") - " + cleanText;
   const doFallback = () => {
     const ta = document.createElement("textarea");
     ta.value = text;
@@ -3316,7 +3484,7 @@ function navigatePrevChapter() {
   syncBibleNavigatorInputs();
   saveBibleSelection();
   void renderCommentaryPanel();
-  if (!state.query.trim()) renderNavigationSelection();
+  openNavigationPassage();
 }
 
 function navigateNextChapter() {
@@ -3339,7 +3507,7 @@ function navigateNextChapter() {
   syncBibleNavigatorInputs();
   saveBibleSelection();
   void renderCommentaryPanel();
-  if (!state.query.trim()) renderNavigationSelection();
+  openNavigationPassage();
 }
 
 // ─── Reading Progress ─────────────────────────────────────────────────────────
@@ -3474,7 +3642,7 @@ function renderCrossReferences(verse) {
       syncBibleNavigatorInputs();
       saveBibleSelection();
       pushNavHistory({ ...state.navigationSelection });
-      if (!state.query.trim()) renderNavigationSelection();
+      openNavigationPassage();
     });
 
     const tag = document.createElement("span");
@@ -3556,18 +3724,39 @@ function handleVerseRangeClick(verse, el, event) {
   return false;
 }
 
+function hideAppLoadingScreen() {
+  const loader = document.querySelector("[data-app-loader]");
+  if (loader) {
+    loader.classList.add("fade-out");
+  }
+}
+
 async function initializeApp() {
+  const loaderSubtitle = document.querySelector("[data-app-loader-subtitle]");
+  const loaderProgress = document.querySelector("[data-app-loader-progress]");
+  const updateProgress = (percentage, statusText) => {
+    if (loaderSubtitle) loaderSubtitle.textContent = statusText;
+    if (loaderProgress) loaderProgress.style.width = `${percentage}%`;
+  };
+
   setLoading(true);
+  updateProgress(15, "Preparing workspace...");
 
   try {
-    state.layout = loadStoredJson("layout", DEFAULT_LAYOUT);
+    let loadedLayout = loadStoredJson("layout", DEFAULT_LAYOUT);
+    if (!loadedLayout || loadedLayout.sidePanelTopHeight === null || loadedLayout.sidePanelTopHeight === undefined) {
+      loadedLayout = { ...DEFAULT_LAYOUT };
+      saveStoredJson("layout", loadedLayout);
+    }
+    state.layout = loadedLayout;
     state.preferences = normalizePreferences(loadStoredJson("preferences", DEFAULT_PREFERENCES));
     state.annotations = loadStoredJson("annotations", DEFAULT_ANNOTATIONS);
     state.searchHistory = (() => { try { return JSON.parse(localStorage.getItem("search-history") || "[]"); } catch { return []; } })();
     state.readingProgress = loadStoredJson("reading-progress", {});
-    state.parallelVersion = (() => { try { return localStorage.getItem("parallel-version") || ""; } catch { return ""; } })();
+    state.parallelVersion = (() => { try { return (localStorage.getItem("parallel-version") || "").replace(/^"|"$/g, ""); } catch { return ""; } })();
     state.hiddenSections = loadStoredJson("hidden-sections", DEFAULT_HIDDEN_SECTIONS);
-    state.activeResultsBook = localStorage.getItem("search-book-filter") || "";
+    selectStudyTab(loadStoredJson("study-tab", "concordance"));
+    state.activeResultsBook = (localStorage.getItem("search-book-filter") || "").replace(/^"|"$/g, "");
     state.navigationSelection = loadBibleSelection();
     applyLayout();
     applyPreferences();
@@ -3575,31 +3764,92 @@ async function initializeApp() {
     refreshViewMenu();
     buildHighlightColorButtons();
 
-    const savedTheme = localStorage.getItem("theme") || "light";
+    const savedTheme = (localStorage.getItem("theme") || "light").replace(/^"|"$/g, "");
     setTheme(savedTheme);
+    updateProgress(45, "Loading Bible manifests...");
 
-    const [dictionary, versionsManifest, bibleNames, bibleNameBiodata, concordance, bsbConcordance, strongsOccurrences, commentaryManifest] = await Promise.all([
-      loadLocalJson("dictionary.json"),
+    // Initial light loading: only load version manifest and commentaries manifest
+    const [versionsManifest, commentaryManifest] = await Promise.all([
       loadLocalJson("bible-versions.json"),
+      loadLocalJson("commentary-manifest.json").catch(() => ({ defaultCommentary: "", commentaries: [] }))
+    ]);
+
+    state.bibleVersions = versionsManifest.versions || [];
+    state.currentVersion = (localStorage.getItem("bible-version") || versionsManifest.defaultVersion || "kjv").replace(/^"|"$/g, "");
+    state.commentaryManifest = Array.isArray(commentaryManifest.commentaries) ? commentaryManifest.commentaries : [];
+    state.currentCommentaryCode = (localStorage.getItem("commentary-code") || commentaryManifest.defaultCommentary || state.commentaryManifest[0]?.code || "").replace(/^"|"$/g, "");
+    populateCommentaryOptions();
+    updateProgress(75, "Loading active Bible translation...");
+
+    // Load active Bible translation
+    console.log(`[DEBUG] Initializing app... Current version: ${state.currentVersion}`);
+    await loadBibleVersion(state.currentVersion);
+    if (state.activeResultsBook && !state.books.includes(state.activeResultsBook)) {
+      state.activeResultsBook = "";
+      localStorage.removeItem("search-book-filter");
+    }
+
+    updateProgress(90, "Rendering Bible workspace...");
+
+    // Render active passage immediately
+    if (!state.query.trim()) {
+      renderNavigationSelection();
+    } else {
+      state.lastResults = getEmptyResults();
+      renderResults(state.lastResults);
+    }
+    void renderCommentaryPanel();
+    try { renderReadingProgressBar(); } catch(e) { console.warn("renderReadingProgressBar:", e); }
+    if (state.parallelVersion) {
+      void loadParallelVersion(state.parallelVersion);
+    }
+
+    updateProgress(100, "Ready!");
+
+    // Wait a brief moment for transition, then hide
+    setTimeout(() => {
+      setLoading(false);
+      hideAppLoadingScreen();
+    }, 180);
+
+    // Prepare search input to show indexing state
+    if (elements.searchInput) {
+      elements.searchInput.placeholder = "Indexing search database...";
+      elements.searchInput.disabled = true;
+    }
+
+    // Load heavy search databases in background
+    setTimeout(loadSearchDataInBackground, 100);
+
+  } catch (error) {
+    console.error(`[DEBUG ERROR] initializeApp failed:`, error);
+    elements.empty.hidden = false;
+    elements.empty.textContent = `Critical Initialization Error: ${error.message}`;
+    setLoading(false);
+    hideAppLoadingScreen();
+  }
+}
+
+async function loadSearchDataInBackground() {
+  try {
+    console.log("[DEBUG] Fetching search databases in background...");
+    const [dictionary, bibleNames, bibleNameBiodata, concordance, bsbConcordance, strongsOccurrences] = await Promise.all([
+      loadLocalJson("dictionary.json"),
       loadLocalJson("bible-names.json"),
       loadLocalJson("bible-name-biodata.json"),
       loadLocalJson("concordance.json"),
       loadLocalJson("bsb_concordance.json").catch(() => ({ entries: [] })),
-      loadLocalJson("strongs-occurrences.json").catch(() => ({ entries: {} })),
-      loadLocalJson("commentary-manifest.json").catch(() => ({ defaultCommentary: "", commentaries: [] }))
+      loadLocalJson("strongs-occurrences.json").catch(() => ({ entries: {} }))
     ]);
 
+    console.log("[DEBUG] Successfully loaded search files. Indexing...");
     state.rawDictionary = dictionary;
-    state.bibleVersions = versionsManifest.versions || [];
-    state.currentVersion = localStorage.getItem("bible-version") || versionsManifest.defaultVersion || "kjv";
     state.bibleNamesData = bibleNames;
     state.nameBiodata = bibleNameBiodata;
     state.concordanceData = concordance;
     state.bsbConcordanceData = Array.isArray(bsbConcordance.entries) ? bsbConcordance.entries : [];
     state.strongsOccurrences = strongsOccurrences && strongsOccurrences.entries ? strongsOccurrences : { entries: {} };
-    state.commentaryManifest = Array.isArray(commentaryManifest.commentaries) ? commentaryManifest.commentaries : [];
-    state.currentCommentaryCode = localStorage.getItem("commentary-code") || commentaryManifest.defaultCommentary || state.commentaryManifest[0]?.code || "";
-    populateCommentaryOptions();
+
     state.dictionaryEntries = Object.entries(dictionary).map(([word, meaning]) => ({
       word,
       meaning,
@@ -3613,11 +3863,13 @@ async function initializeApp() {
 
       if (message.type === "ready") {
         state.isReady = true;
+        console.log("[DEBUG] Search indexing completed.");
+        if (elements.searchInput) {
+          elements.searchInput.placeholder = "Type Word to Search";
+          elements.searchInput.disabled = false;
+        }
         if (state.query.trim()) {
           requestSearch(state.query);
-        } else {
-          state.lastResults = getEmptyResults();
-          renderResults(state.lastResults);
         }
         return;
       }
@@ -3634,23 +3886,21 @@ async function initializeApp() {
       }
     });
 
-    console.log(`[DEBUG] Initializing app... Current version: ${state.currentVersion}`);
-    await loadBibleVersion(state.currentVersion);
-    if (state.activeResultsBook && !state.books.includes(state.activeResultsBook)) {
-      state.activeResultsBook = "";
-      localStorage.removeItem("search-book-filter");
-    }
-    void renderCommentaryPanel();
-    try { renderReadingProgressBar(); } catch(e) { console.warn("renderReadingProgressBar:", e); }
-    // Load parallel version if saved
-    if (state.parallelVersion) {
-      void loadParallelVersion(state.parallelVersion);
-    }
+    // Initialize worker with full datasets
+    state.searchWorker.postMessage({
+      type: "init",
+      payload: {
+        dictionary: state.rawDictionary,
+        bible: state.bibleData,
+        bibleNames: state.bibleNamesData,
+        concordance: state.concordanceData,
+        bsbConcordance: state.bsbConcordanceData,
+        activeVersion: state.currentVersion
+      }
+    });
+
   } catch (error) {
-    console.error(`[DEBUG ERROR] initializeApp failed:`, error);
-    elements.empty.hidden = false;
-    elements.empty.textContent = `Critical Initialization Error: ${error.message}`;
-    setLoading(false);
+    console.error("[DEBUG ERROR] Background search indexing failed:", error);
   }
 }
 
@@ -3719,24 +3969,17 @@ elements.bibleBookSelect.addEventListener("change", () => {
   syncBibleNavigatorInputs();
   saveBibleSelection();
   void renderCommentaryPanel();
-  if (!state.query.trim()) {
-    renderNavigationSelection();
-  }
+  openNavigationPassage();
 });
 elements.bibleChapterInput.addEventListener("change", () => {
   clearActiveVerseFocus();
   const book = state.navigationSelection.book || state.books[0];
   state.navigationSelection.chapter = clampNumber(elements.bibleChapterInput.value, 1, getChapterCount(book));
-  state.navigationSelection.verse = parseVerseSelection(
-    elements.bibleVerseInput.value,
-    getVerseCount(book, state.navigationSelection.chapter)
-  );
+  state.navigationSelection.verse = null;
   syncBibleNavigatorInputs();
   saveBibleSelection();
   void renderCommentaryPanel();
-  if (!state.query.trim()) {
-    renderNavigationSelection();
-  }
+  openNavigationPassage();
 });
 elements.bibleVerseInput.addEventListener("change", () => {
   clearActiveVerseFocus();
@@ -3747,9 +3990,7 @@ elements.bibleVerseInput.addEventListener("change", () => {
   syncBibleNavigatorInputs();
   saveBibleSelection();
   void renderCommentaryPanel();
-  if (!state.query.trim()) {
-    renderNavigationSelection();
-  }
+  openNavigationPassage();
 });
 elements.numberButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -3766,26 +4007,15 @@ elements.bibleNavForm.addEventListener("submit", (event) => {
   syncBibleNavigatorInputs();
   saveBibleSelection();
   void renderCommentaryPanel();
-  elements.searchInput.value = "";
-  state.query = "";
-  state.lookupFocusQuery = "";
-  state.lastResults = getEmptyResults();
-  state.verseResultsPage = 1;
-  if (elements.verseLoadMore) {
-    elements.verseLoadMore.hidden = true;
-  }
-  renderNavigationSelection();
+  openNavigationPassage();
 });
 
 // Chapter prev/next buttons
-const chapterPrevBtn = document.querySelector("[data-chapter-prev]");
-const chapterNextBtn = document.querySelector("[data-chapter-next]");
-if (chapterPrevBtn) chapterPrevBtn.addEventListener("click", navigatePrevChapter);
-if (chapterNextBtn) chapterNextBtn.addEventListener("click", navigateNextChapter);
+document.querySelectorAll("[data-chapter-prev]").forEach((btn) => btn.addEventListener("click", navigatePrevChapter));
+document.querySelectorAll("[data-chapter-next]").forEach((btn) => btn.addEventListener("click", navigateNextChapter));
 
 elements.themeToggle.addEventListener("click", () => {
-  const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-  setTheme(nextTheme);
+  openPreferencesModal("appearance");
 });
 elements.menuEdit.addEventListener("click", () => {
   openSearch();
@@ -3813,9 +4043,37 @@ if (elements.verseLoadMore) {
     requestSearch();
   });
 }
-elements.openPreferences.addEventListener("click", openPreferencesModal);
-elements.openAbout.addEventListener("click", openAboutModal);
-elements.openTutorial.addEventListener("click", openTutorialModal);
+elements.openPreferences.addEventListener("click", () => openPreferencesModal("general"));
+elements.openAbout.addEventListener("click", () => openPreferencesModal("about"));
+elements.openTutorial.addEventListener("click", () => openPreferencesModal("about"));
+
+// Settings tab switching handlers
+document.querySelectorAll("[data-settings-tab]").forEach(button => {
+  button.addEventListener("click", () => {
+    switchSettingsTab(button.dataset.settingsTab);
+  });
+});
+
+// Settings visual theme card handlers
+document.querySelectorAll(".theme-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const themeId = card.dataset.themeId;
+    if (themeId) {
+      setTheme(themeId);
+    }
+  });
+});
+
+// Dropdown popover theme items handlers
+document.querySelectorAll("[data-set-theme]").forEach(item => {
+  item.addEventListener("click", () => {
+    const themeId = item.dataset.setTheme;
+    if (themeId) {
+      setTheme(themeId);
+      closeThemePopover();
+    }
+  });
+});
 
 // Nav history buttons
 document.addEventListener("click", (event) => {
@@ -3962,6 +4220,9 @@ document.addEventListener("click", (event) => {
   }
   if (!event.target.closest("[data-menu-view-popover]") && !event.target.closest("[data-menu-view]")) {
     closeViewMenu();
+  }
+  if (!event.target.closest("[data-theme-popover]") && !event.target.closest("[data-theme-dropdown-btn]")) {
+    closeThemePopover();
   }
   if (!event.target.closest("[data-book-occurrences-popover]") && !event.target.closest("[data-open-book-occurrences]")) {
     closeBookOccurrencesPopover();
@@ -4134,15 +4395,7 @@ window.addEventListener("resize", () => {
   if (state.contextMenu.visible) {
     positionContextMenu(state.contextMenu.x, state.contextMenu.y);
   }
-  if (elements.preferencesModal.open) {
-    positionMenuDialog(elements.preferencesModal, elements.openPreferences);
-  }
-  if (elements.aboutModal.open) {
-    positionMenuDialog(elements.aboutModal, elements.openAbout);
-  }
-  if (elements.tutorialModal.open) {
-    positionMenuDialog(elements.tutorialModal, elements.openTutorial);
-  }
+  // Dialogs are centered via CSS, no dynamic positioning needed on resize.
 });
 
 if (elements.content) {
@@ -4205,4 +4458,46 @@ elements.chapterList.addEventListener("click", (event) => {
 });
 elements.chapterList.addEventListener("scroll", closeVerseActionsPopover);
 
+function selectStudyTab(key) {
+  const sidebar = document.querySelector("[data-study-sidebar]");
+  const tabs = [...document.querySelectorAll("[data-study-tab]")];
+  if (!sidebar) return;
+  if (!tabs.some((tab) => tab.dataset.studyTab === key)) key = "concordance";
+  sidebar.dataset.activeStudy = key;
+  saveStoredJson("study-tab", key);
+  for (const tab of tabs) {
+    const active = tab.dataset.studyTab === key;
+    tab.setAttribute("aria-selected", String(active));
+    tab.tabIndex = active ? 0 : -1;
+  }
+  for (const panel of document.querySelectorAll("[data-study-panel]")) {
+    panel.hidden = panel.dataset.studyPanel !== key;
+  }
+  const sections = key === "names" ? ["bibleNames", "biodata"] : [key];
+  for (const section of sections) state.hiddenSections[section] = false;
+  syncSidePanelLayout();
+  if (key === "commentary") void renderCommentaryPanel();
+}
+
+function initializeStudyWorkspace() {
+  elements.content.classList.add("study-workspace");
+  const tabs = [...document.querySelectorAll("[data-study-tab]")];
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => selectStudyTab(tab.dataset.studyTab));
+    tab.addEventListener("keydown", (event) => {
+      let next = index;
+      if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
+      else if (event.key === "ArrowLeft") next = (index + tabs.length - 1) % tabs.length;
+      else if (event.key === "Home") next = 0;
+      else if (event.key === "End") next = tabs.length - 1;
+      else return;
+      event.preventDefault();
+      selectStudyTab(tabs[next].dataset.studyTab);
+      tabs[next].focus();
+    });
+  });
+  selectStudyTab(loadStoredJson("study-tab", "concordance"));
+}
+
+initializeStudyWorkspace();
 initializeApp();

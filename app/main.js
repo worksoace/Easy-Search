@@ -1,6 +1,7 @@
 // Main Electron process: creates the desktop window and loads the renderer.
 const path = require("path");
 const fs = require("fs/promises");
+const zlib = require("zlib");
 const { app, BrowserWindow, ipcMain, nativeImage, nativeTheme, protocol } = require("electron");
 const DATA_DIR = path.join(__dirname, "data");
 app.setAppUserModelId("com.easysearch.app");
@@ -17,6 +18,25 @@ protocol.registerSchemesAsPrivileged([
     }
   }
 ]);
+
+async function readFileHelper(filePath, isText = false) {
+  const gzPath = filePath + ".gz";
+  try {
+    const compressed = await fs.readFile(gzPath);
+    const decompressed = await new Promise((resolve, reject) => {
+      zlib.gunzip(compressed, (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    });
+    return isText ? decompressed.toString("utf8") : decompressed;
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      throw err;
+    }
+    return isText ? await fs.readFile(filePath, "utf8") : await fs.readFile(filePath);
+  }
+}
 
 async function handleAppDataRequest(request) {
   try {
@@ -53,7 +73,7 @@ async function handleAppDataRequest(request) {
     };
 
     const serveFile = async (filePath) => {
-      const fileContents = await fs.readFile(filePath);
+      const fileContents = await readFileHelper(filePath);
       const extension = path.extname(filePath).toLowerCase();
       const contentType =
         extension === ".json" ? "application/json; charset=utf-8" :
@@ -148,7 +168,7 @@ async function readLocalJson(relativePath) {
     throw new Error("Local data file not allowed.");
   }
 
-  const fileContents = await fs.readFile(filePath, "utf8");
+  const fileContents = await readFileHelper(filePath, true);
   return JSON.parse(fileContents);
 }
 
